@@ -11,6 +11,9 @@ router.get("/contacts")
 router.get("/contacts/:contactId")
 router.delete("/contacts/:contactId")
 
+//Onboarding Message Template to multiple contacts
+router.post("/:wabaId/templates/onboard")
+
 // Manage Campaigns
 router.get("/campaigns")
 router.get("/campaigns/:campaignId")
@@ -30,5 +33,6 @@ router.delete("/phoneNumber/:phoneNumberId")
 router.get("/webhooks")
 router.post("/webhooks")
 router.delete("/webhooks/:webhookId")
+
 
 export default router;
