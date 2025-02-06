@@ -36,7 +36,7 @@ export function errorResponse(
   msg:string,
 ): Response<ResponseData>{
   const data: ResponseData={
-    status:1,
+    status:0,
     message:msg
   }
   return res.status(500).json(data)

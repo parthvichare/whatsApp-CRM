@@ -1,11 +1,12 @@
 import express,{Router} from "express";
+import { addPhoneNumber,requestOtp, verifyOtp } from "../controllers/embeddedOnboardingController";
 
 const router:Router = express.Router();
 
 router.post("/createClientWabaId")
-router.post("/:wabaId/addphonenumber")  
-router.post("/:phonenumberId/requestCode")
-router.post("/:phonenumberId/verifyCode")
+router.post("/addphonenumber",addPhoneNumber)  
+router.post("/requestOTP",requestOtp)
+router.post("/verifyOTP",verifyOtp)
 router.get("/:wabaId/phonenumber")
 
 

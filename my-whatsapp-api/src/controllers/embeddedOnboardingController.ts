@@ -2,9 +2,11 @@ import { Request, Response } from "express";
 import dotenv from "dotenv";
 import {successResponseWithData,errorResponse,notFoundResponse,validationErrorWithData} from  "../helper/apiResponse";
 import { axiosInstance } from "../helper/utils";
+import axios from "axios";
 
 dotenv.config({ path: "../../.env" });
 const token = process.env.ACCESS_TOKEN
+console.log(token)
 
 interface AddPhoneNumberResponse {
     id: string; 
@@ -33,24 +35,34 @@ export const createWabaId = async(req:Request, res:Response)=>{
 }
 
 export const addPhoneNumber = async(req:Request,res:Response)=>{
-    const{phoneNumber,countryCode,type,verifiedName} =  req.body;
+    const{phone_number,cc,TYPE,verified_name} =  req.body;
     const params={
-        phoneNumber,
-        countryCode,
-        type,
-        verifiedName
+        phone_number,
+        cc,
+        TYPE,
+        verified_name
     }
 
     try{
         const response = await axiosInstance.post<AddPhoneNumberResponse>(
-            `${process.env.WABAID}`,
-            {headers,params}
+            `${process.env.WABAID}/phone_numbers`,
+            params,
+            {headers}
         );
+        if(response.status===400){
+            console.log(response)
+        }
         const{id} = response.data
         //Stored the phoneNumberId in the clientDetail_DB
         return successResponseWithData(res,"Phone Number Added under the WABAID", {phoneNumberId:id})
-    }catch(error){
-        return errorResponse(res,(error as Error).message)
+    } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+            const errorMessage = error.response.data?.error?.error_user_msg || "An error occurred";
+            console.log("Error message from Graph API:", errorMessage);
+            return errorResponse(res, errorMessage);
+        } else {
+            return errorResponse(res, (error as Error).message);
+        }
     }
 }
 
@@ -64,7 +76,8 @@ export const requestOtp = async(req:Request,res:Response)=>{
     try{
         const response = await axiosInstance.post(
             `${process.env.Phone_Number_ID}/request_code`,
-            {headers,params}
+            params,
+            {headers}
         )
         return successResponseWithData(res, "OTP send successfully", response.data)
     }catch(error){
@@ -81,7 +94,8 @@ export const verifyOtp =  async(req:Request, res:Response)=>{
     try{
         const response = await axiosInstance.post(
             `${process.env.Phone_Number_ID}/verify_code`,
-            {headers,params}
+            params,
+            {headers}
         )
         return successResponseWithData(res,"Your WhatsApp business Number is verified", response.data)
     }catch(error){
@@ -99,4 +113,25 @@ export const verifyOtp =  async(req:Request, res:Response)=>{
 
 
 
+// export const addPhoneNumber = async(req:Request,res:Response)=>{
+//     const{phone_number,cc,TYPE,verified_name} =  req.body;
+//     const params={
+//         phone_number,
+//         cc,
+//         TYPE,
+//         verified_name
+//     }
 
+//     try{
+//         const response = await axiosInstance.post<AddPhoneNumberResponse>(
+//             `${process.env.WABAID}/phone_numbers`,
+//             params,
+//             {headers}
+//         )
+//         const{id} = response.data
+//         //Stored the phoneNumberId in the clientDetail_DB
+//         return successResponseWithData(res,"Phone Number Added under the WABAID", {phoneNumberId:id})
+//     } catch (error) {
+//         return errorResponse(res,(error as Error).message)
+//     }
+// }
