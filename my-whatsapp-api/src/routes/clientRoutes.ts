@@ -17,7 +17,7 @@ router.post("/:wabaId/templates/onboard")
 // Manage Campaigns
 router.get("/campaigns")
 router.get("/campaigns/:campaignId")
-router.delete("/campaigns/:campaignId")
+router.delete("/campaigns/:campaignId");
 
 //Manage Templates
 router.get("/templates");
@@ -25,8 +25,8 @@ router.post("/templates");
 router.get("templates/:templateId");
 
 //View Message Analytics
-router.get("/client/analytics");
-router.post("/client/phoneNumber");
+router.get("/analytics");
+router.post("/phoneNumber");
 router.delete("/phoneNumber/:phoneNumberId")
 
 //Update Client business Information
