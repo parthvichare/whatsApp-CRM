@@ -4,6 +4,7 @@ const router:Router = express.Router();
 
 //Client Profile
 router.get("/profile")
+router.patch("/updateProfile")
 
 // Client Contact Management Routes
 router.post("/contacts");

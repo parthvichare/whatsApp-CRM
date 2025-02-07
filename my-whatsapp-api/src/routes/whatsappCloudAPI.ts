@@ -5,25 +5,24 @@ const router:Router = express.Router();
 
 
 // Messaging API Routes
-router.post("/:phoneNumberId/sendMessage");
-router.post("/:phoneNumberId/sendTemplate");
-router.get("/:phoneNumberId/messages");
+router.post("/sendMessage");
+router.post("/sendTemplate");
+router.get("/messages");
 
 //Update Client Profile Section
-router.post("/clientBusinessProfile")
-router.post("")
+router.post("/business-profile")
+router.patch("/busniess-profile")
+router.get("/business-profile")
 
 //Campaign Management Routes
-router.post("/:wabaId/campaigns");
-router.get("/:wabaId/campaigns");
-router.get("/:wabaId/campaigns/:campaignId");
-router.delete("/:wabaId/campaigns/:campaignId");
+router.post("/campaigns");
+router.get("/campaigns");
+router.get("/campaigns/:campaignId");
+router.delete("/campaigns/:campaignId");
 
 //Analytics & Reporting Routes
-router.get("/:wabaId/reports/message")
-router.get("/:wabaId/reports/campaigns")
-
-
+router.get("/reports/message")
+router.get("/reports/campaigns")
 
 //webhooks
 router.get("/webhooks", handleWebhook);
