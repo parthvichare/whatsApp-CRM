@@ -2,6 +2,64 @@ import express,{Router} from "express";
 
 const router:Router = express.Router();
 
+//Sales Agent Dashboard
+
+
+//Lead- Management
+router.get("/leads/assigned");
+router.get("/leads/:leadId");
+router.post("/lead/:leadId/status");
+
+
+// Conversation & Chat History
+router.get("/chat");
+router.get("/chat/:lead_id");
+
+//Live-Chat
+router.get("/live");
+router.get("/live/:lead_id");
+
+
+// Body: { lead_id, message }
+router.get("/messages/status");
+
+
+//Notification Updates
+router.get("/notification");
+router.post("/notification/mark-read");
+
+
+//Template Management
+router.get("/templates"); 
+router.get("/templates/:templateId"); 
+router.post("/templates/send");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //Client Profile
 router.get("/profile")
 router.patch("/updateProfile")

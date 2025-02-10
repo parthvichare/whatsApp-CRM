@@ -28,7 +28,7 @@ export const createWabaId = async(req:Request, res:Response)=>{
     try{
         const response  = await axiosInstance.post(`/${process.env.Business_ID}/whatsapp_business_account/`,{headers,params})
         //Stored the whatsApp BusinessId in the clientDetail_DB
-        return successResponseWithData(res,"Your WhatsAppBusiness-Id Created Successfully", response)
+        return successResponseWithData(res,"Your WhatsAppBusiness-Id Created Successfully", response.data)
     }catch(error){
         return errorResponse(res,(error as Error).message);
     }
