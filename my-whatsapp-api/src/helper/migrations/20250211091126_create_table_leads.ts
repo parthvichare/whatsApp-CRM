@@ -6,6 +6,10 @@ export async function up(knex: Knex): Promise<void> {
         table.uuid("id").defaultTo(knex.raw("gen_random_uuid()")).notNullable().primary();
         table.string("name").notNullable();
         table.integer("phoneNumber").unique().notNullable();
+        table.uuid("salesAgentId").notNullable().references("id").inTable("salesAgent").onDelete("SET NULL");
+        table
+        .enum("leadStatus",["hot","cold","notInterested","converted"])
+        .defaultTo("cold")
         table.timestamps(true,true,true)
     })
 }

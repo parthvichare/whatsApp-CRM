@@ -5,8 +5,8 @@ export async function up(knex: Knex): Promise<void> {
     return knex.schema.createTable("conversations",(table)=>{
         table.uuid("id").defaultTo(knex.raw("gen_random_uuid()")).notNullable().primary();
         table.uuid("leadId").references('id').inTable("leads").onDelete("CASCADE");
-        table.integer("assignedTo",10).nullable();
-        table.timestamps(true,true,true);
+        table.uuid("assignedTo").nullable().references("id").inTable("salesAgent").onDelete("SET NULL");
+        table.timestamps(true,true);
     })
 }
 

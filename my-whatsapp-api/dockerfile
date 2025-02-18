@@ -13,8 +13,8 @@ RUN npm install -g ts-node nodemon
 # Copy the entire project
 COPY . .
 
-# Build TypeScript
-RUN npm run build
+# # Build TypeScript
+# RUN npm run build
 
 # Expose the port
 EXPOSE 8000

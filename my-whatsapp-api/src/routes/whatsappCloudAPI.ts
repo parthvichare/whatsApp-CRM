@@ -1,10 +1,11 @@
 import express,{Router} from "express";
 // import { handleWebhook } from "../controllers/webhookController";
-import { createBusinessProfile,editBusinessProfile,getBusinessProfileSection } from "../controllers/whatsappCloudAPI";
-import {createUploadSession,uploadFileData} from "../controllers/resumableUploadAPI";
+import { createBusinessProfile,editBusinessProfile,getBusinessProfileSection,sendTextMessage } from "../controllers/api/messages/whatsappCloudAPI";
+import {createUploadSession,uploadFileData} from "../controllers/testingControllers/resumableUploadAPI";
 import multer from "multer";
 import {verifyWebhook} from "../helper/utils";
-import {handleIncomingMessages} from "../controllers/webhookController";
+import {handleIncomingMessages} from "../controllers/api/webhookController";
+import {sendMessage} from "../controllers/api/socketController"
 
 
 const router:Router = express.Router();
@@ -16,7 +17,7 @@ const upload = multer({storage});
 router.get("/webhook", verifyWebhook);
 router.post("/webhook", handleIncomingMessages);
 
-router.post("/messages/send");       //Custom Message
+router.post("/messages/send",sendMessage);       //Custom Message
 router.post("/messages/template");   //automated messages (reminders, OTPs, confirmations)
 router.get("/messages/status");     //webhook message-echoes
 

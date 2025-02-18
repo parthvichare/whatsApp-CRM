@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import dotenv from "dotenv";
-import {successResponseWithData, errorResponse, notFoundResponse, validationErrorWithData} from  "../helper/apiResponse";
-import { axiosInstance } from "../helper/utils";
+import {successResponseWithData, errorResponse, notFoundResponse, validationErrorWithData} from  "../../helper/apiResponse"
+import { axiosInstance } from "../../helper/utils";
 import axios from "axios";
 
 
@@ -29,28 +29,55 @@ interface WebhookData{
 
 
 // Create DataBase which stored lead-Details in contact List if its not get stored & Stored Incoming Messages(Messagefrom,messageBody,messageType)
+export class webhookController{
+    static async handleWebhook(req:Request,res:Response){
 
-export const handleIncomingMessages = (req:Request, res: Response) => {
-    const data: WebhookData = req.body;
-
-    console.log('Incoming Message', JSON.stringify(data,null,2));
-
-    if(data.object === "whatsapp_business_account"){
-        const changes: Change[] = data.entry[0].changes;
-        changes.forEach((change:Change)=>{
-            const messageData : IncomingMessage[] = change.value.messages
-            if(messageData && messageData.length > 0){
-                messageData.forEach((message:IncomingMessage)=>{
-                    console.log("Received Message", message.text.body);
-                })
-            }else{
-                console.log("No Message Found in change", change)
-            }
-        })
     }
-    return successResponseWithData(res, "Incoming Message", data)
+
+    static async handleIncomingMessage(req:Request,res:Response){
+
+    }
+
+    static hanldeMessageStatus(req:Request,res:Response){
+
+    }
 }
 
+
+
+
+
+
+// export const handleIncomingMessages = (req:Request, res: Response) => {
+//     const data: WebhookData = req.body;
+
+//     console.log('Incoming Message', JSON.stringify(data,null,2));
+
+//     if(data.object === "whatsapp_business_account"){
+//         const changes: Change[] = data.entry[0].changes;
+//         changes.forEach((change:Change)=>{
+//             const messageData : IncomingMessage[] = change.value.messages
+//             if(messageData && messageData.length > 0){
+//                 messageData.forEach((message:IncomingMessage)=>{
+//                     console.log("Received Message", message.text.body);
+//                 })
+//             }else{
+//                 console.log("No Message Found in change", change)
+//             }
+//         })
+//     }
+//     return successResponseWithData(res, "Incoming Message", data)
+// }
+
+
+//Help to differentiate which kind of Incoming Message it is  textMessages or statusofsentMessage
+// if(value.messages){
+//     console.log("Incoming message from lead:", value.messages);
+// }
+
+// if(value.statuses){
+//     console.log("Status update for sent message:", value.statuses);
+// }
 
 
 

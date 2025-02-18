@@ -1,0 +1,1 @@
+import { queryTable,selectFromTable } from "../helper/knexConfig";

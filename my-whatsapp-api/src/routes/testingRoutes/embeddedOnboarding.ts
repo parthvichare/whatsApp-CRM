@@ -1,5 +1,5 @@
 import express,{Router} from "express";
-import { addPhoneNumber,requestOtp, verifyOtp } from "../controllers/embeddedOnboardingController";
+import { addPhoneNumber,requestOtp, verifyOtp } from "../../controllers/testingControllers/embeddedOnboardingController";
 
 const router:Router = express.Router();
 

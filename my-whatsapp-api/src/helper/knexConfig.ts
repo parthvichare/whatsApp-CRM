@@ -24,18 +24,13 @@ db.raw('SELECT 1')
 //  * @param {string} tableName - Name of the table.
 //  * @returns {Promise} - Returns the promise from knex.
 //  */
-// const queryTable = (tableName,data) => {
-//   return db(tableName).insert(data);
-// };
+export const queryTable = (tableName:string,data:any) => {
+  return db(tableName).insert(data);
+};
 
 
-// const selectFromTable = (tableName, columns = '*', whereClause = {}) => {
-//   return db(tableName).select(columns).where(whereClause);
-// };
+export const selectFromTable = (tableName:string, columns = '*', whereClause = {}) => {
+  return db(tableName).select(columns).where(whereClause);
+};
 
 
-// module.exports = {
-//   db,
-//   queryTable,
-//   selectFromTable
-// };

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import dotenv from "dotenv";
-import {successResponseWithData,errorResponse,notFoundResponse,validationErrorWithData} from  "../helper/apiResponse";
-import { axiosInstance } from "../helper/utils";
+import {successResponseWithData,errorResponse,notFoundResponse,validationErrorWithData} from  "../../helper/apiResponse";
+import { axiosInstance } from "../../helper/utils";
 import axios from "axios";
 
 const token = process.env.ACCESS_TOKEN
