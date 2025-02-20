@@ -1,47 +1,78 @@
-import { Request, Response } from "express";
-import dotenv from "dotenv";
-import {successResponseWithData, errorResponse, notFoundResponse, validationErrorWithData} from  "../../helper/apiResponse"
-import { axiosInstance } from "../../helper/utils";
-import axios from "axios";
+// import { Request, Response } from "express";
+// import WhatsApp from "whatsapp"; // WhatsApp SDK
+// import MessageModel from "../models/Message"; // Import your message model
+// import { whatsAppMessagingService } from "../services/whatsAppMessagingService";
+
+// const whatsApp = new WhatsApp();
+
+// export class WebhookController {
+    
+//     // Handle incoming webhook events from WhatsApp
+//     static async handleWebhook(req: Request, res: Response) {
+//         const data = req.body;
+
+//         if (data.object && data.entry) {
+//             for (const entry of data.entry) {
+//                 for (const messagingEvent of entry.messaging) {
+//                     if (messagingEvent.message) {
+//                         await this.handleIncomingMessage(messagingEvent);
+//                     } else if (messagingEvent.status) {
+//                         await this.handleMessageStatus(messagingEvent);
+//                     }
+//                 }
+//             }
+//             return res.status(200).send("EVENT_RECEIVED");
+//         }
+//         return res.status(404).send("EVENT_NOT_FOUND");
+//     }
+
+//     // Handle incoming messages
+//     static async handleIncomingMessage(messagingEvent: any) {
+//         const senderId = messagingEvent.sender.id; // Extract sender ID
+//         const messageText = messagingEvent.message.text; // Extract message content
+
+//         console.log(Received message from ${senderId}: ${messageText});
+
+//         // Store the received message in the database
+//         const newMessage = new MessageModel({
+//             senderId,
+//             messageText,
+//             status: "received",
+//             timestamp: new Date()
+//         });
+
+//         try {
+//             await newMessage.save();
+//             console.log("Message saved to database.");
+//         } catch (error) {
+//             console.error("Error saving message to database:", error);
+//         }
+
+//         // Process the message with business logic
+//         await whatsAppMessagingService.getMessage({ senderId, messageText });
+
+//         // Auto-reply using WhatsApp SDK
+//         await whatsApp.sendMessage(senderId, You said: ${messageText});
+//     }
+
+//     // Handle message status updates
+//     static async handleMessageStatus(messagingEvent: any) {
+//         const messageId = messagingEvent.status.id;
+//         const status = messagingEvent.status.status; // Delivered, read, failed, etc.
+
+//         // console.log(Message ${messageId} status updated to: ${status});
+
+//         // Update the message status in the database
+//         try {
+//             await MessageModel.findOneAndUpdate({ _id: messageId }, { status });
+//             console.log("Message status updated in database.");
+//         } catch (error) {
+//             console.error("Error updating message status:", error);
+//         }
+//     }
+// }
 
 
-interface IncomingMessage {
-    text: {
-        body: string;
-    }
-}
-
-interface Change {
-    value: {
-        messages: IncomingMessage[];
-    }
-}
-
-interface Entry{
-    changes: Change[];
-}
-
-interface WebhookData{
-    object: string;
-    entry: Entry[];
-}
-
-
-
-// Create DataBase which stored lead-Details in contact List if its not get stored & Stored Incoming Messages(Messagefrom,messageBody,messageType)
-export class webhookController{
-    static async handleWebhook(req:Request,res:Response){
-
-    }
-
-    static async handleIncomingMessage(req:Request,res:Response){
-
-    }
-
-    static hanldeMessageStatus(req:Request,res:Response){
-
-    }
-}
 
 
 

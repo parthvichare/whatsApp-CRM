@@ -1,11 +1,11 @@
 import express,{Router} from "express";
 // import { handleWebhook } from "../controllers/webhookController";
-import { createBusinessProfile,editBusinessProfile,getBusinessProfileSection,sendTextMessage } from "../controllers/api/messages/whatsappCloudAPI";
+// import { createBusinessProfile,editBusinessProfile,getBusinessProfileSection,sendTextMessage } from "../services/messages/whatsappCloudAPI";
 import {createUploadSession,uploadFileData} from "../controllers/testingControllers/resumableUploadAPI";
 import multer from "multer";
 import {verifyWebhook} from "../helper/utils";
-import {handleIncomingMessages} from "../controllers/api/webhookController";
-import {sendMessage} from "../controllers/api/socketController"
+// import {handleIncomingMessages} from "../controllers/webhookController";
+import {sendMessage} from "../sockets/socketHandler"
 
 
 const router:Router = express.Router();
@@ -15,7 +15,7 @@ const upload = multer({storage});
 
 //webhooks
 router.get("/webhook", verifyWebhook);
-router.post("/webhook", handleIncomingMessages);
+// router.post("/webhook", handleIncomingMessages);
 
 router.post("/messages/send",sendMessage);       //Custom Message
 router.post("/messages/template");   //automated messages (reminders, OTPs, confirmations)
@@ -47,10 +47,10 @@ router.get("/messages/status");     //webhook message-echoes
 
 
 
-//Update Client Profile Section
-router.post("/business-profile",  createBusinessProfile)
-router.patch("/busniess-profile", editBusinessProfile)
-router.get("/business-profile",   getBusinessProfileSection)
+// //Update Client Profile Section
+// router.post("/business-profile",  createBusinessProfile)
+// router.patch("/busniess-profile", editBusinessProfile)
+// router.get("/business-profile",   getBusinessProfileSection)
 
 //Upload Profile Photo
 router.post("/generate-upload-session", createUploadSession)

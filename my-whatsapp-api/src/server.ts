@@ -1,5 +1,5 @@
 import app from "./app";
-import { socketController } from "./controllers/api/socketController";
+import { socketController } from "./sockets/socketHandler";
 import http from "http";
 import cors from "cors";
 import socketIo from "socket.io"

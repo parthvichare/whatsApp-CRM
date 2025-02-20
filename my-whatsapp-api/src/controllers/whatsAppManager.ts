@@ -2,7 +2,7 @@ import WhatsApp from "whatsapp";
 
 const whatsApp =  new WhatsApp()
 
-export class whatsAppManager {
+export default class whatsAppManager {
     static async trackUsage(agentId:string){
 
     }

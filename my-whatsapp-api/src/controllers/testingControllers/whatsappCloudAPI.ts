@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { axiosInstance } from "../../../helper/utils";
-import {queryTable} from "../../../helper/knexConfig";
-import {successResponseWithData,errorResponse,notFoundResponse,validationErrorWithData} from  "../../../helper/apiResponse";
+import { axiosInstance } from "../../helper/utils";
+import {queryTable} from "../../helper/knexConfig";
+import {successResponseWithData,errorResponse,notFoundResponse,validationErrorWithData} from  "../../helper/apiResponse";
 import axios from "axios";
 
 import dotenv from "dotenv";
@@ -133,7 +133,6 @@ export const deleteCampaignId = async(req:Request,res:Response)=>{
 export const getCampaignAnalytics = async(req:Request,res:Response)=>{
 
 }
-
 
 
 
