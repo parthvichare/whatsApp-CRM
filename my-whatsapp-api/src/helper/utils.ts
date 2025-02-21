@@ -5,9 +5,11 @@ import axios from "axios";
 import { Leads } from "../models/leadModel";
 import { Conversations } from "../models/conversationModel";
 import { Messages } from "../models/messageModel";
-import whatsAppMessagingService from "../controllers/services/whatsAppMessagingService";
+// import whatsAppMessagingService from "../controllers/services/whatsAppMessagingService";
 
 dotenv.config({ path: "../../.env" });
+
+// console.log(process.env.ACESS_TOKEN)
 
 interface createLeadConversations{
     salesAgentId:string,
@@ -68,7 +70,7 @@ export const getOrCreateLeadAndConversation = async (leadPhoneNumber: number,sal
   }
 };
 
-//Text Message Handling
+// //Text Message Handling
 export const handleTextMessageFlow = async (leadPhoneNumber: number, salesAgentId: string, messagedetails:any) => {
     try{
         const result = await getOrCreateLeadAndConversation(leadPhoneNumber,salesAgentId,messagedetails);
@@ -77,24 +79,26 @@ export const handleTextMessageFlow = async (leadPhoneNumber: number, salesAgentI
         }
         const {conversation} = result
 
-        // Store Message and SendMessage In parallel
-        await Promise.all([
-            Messages.createTextMessage({
-                    conversationId: conversation.id,
-                    messageFrom: salesAgentId,
-                    messageTo: leadPhoneNumber,
-                    direction: "outgoing",
-                    messageType: "text",
-                    messageContent: messagedetails.content,
-                    status: messagedetails.status || "send",
-                    messageId: messagedetails.id
-            }),
-            whatsAppMessagingService.sendTextMessage(messagedetails.messsageContent,messagedetails.messageTo)
-        ])
-    
-        return {conversation};
+        // const messageResponse = await whatsAppMessagingService.sendTextMessage(messagedetails.messsageContent,messagedetails.messageTo)
+
+        const messageData = await Messages.createTextMessage({
+            conversationId: conversation.id,
+            messageFrom: salesAgentId,
+            messageTo: leadPhoneNumber,
+            direction: "outgoing",
+            messageType: "text",
+            messageContent: messagedetails.messageContent,
+            status: messagedetails.status || "send",
+            // messageId: messageResponse.id
+            messageId: messagedetails.id
+        })
+        return {success:true, message:"Message Sent Successfully", data:{conversation,messageData}}
     }catch(error){
-        console.error(error);
+        if(axios.isAxiosError(error) && error.response){
+            return {success:false, message:error.response.data?.error?.message || "WhatsApp API Error"}
+        }else{
+            return {success:false, message: (error as Error).message}
+        }
     }
 }
 
@@ -120,7 +124,7 @@ export const handleTemplateMessageFlow = async(leadPhoneNumber: number, salesAge
                 templateName: messagedetails.templateName,
                 messageId: messagedetails.id
             }),
-            whatsAppMessagingService.sendTemplateMessage(messagedetails.messageTo,messagedetails.content)
+            // whatsAppMessagingService.sendTemplateMessage(messagedetails.messageTo,messagedetails.messageContent)
         ])
     
         return {conversation};

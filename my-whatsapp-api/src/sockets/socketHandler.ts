@@ -2,9 +2,9 @@ import { Server } from "socket.io";
 import { Request, Response } from "express";
 import { userInfo } from "os";
 import { SalesAgent } from "../models/salesAgent";
-import { handleTextMessageFlow,handleTemplateMessageFlow } from "../helper/utils";
+import { handleTemplateMessageFlow,handleTextMessageFlow } from "../helper/utils";
 import { Messages } from "../models/messageModel";
-import whatsAppMessagingService from "../controllers/services/whatsAppMessagingService";
+// import whatsAppMessagingService from "../controllers/services/whatsAppMessagingService";
 
 let io: Server | null = null; // Declare io as null initially
 
@@ -33,17 +33,20 @@ export const socketController = (server: any): Server => {
         socket.on("sendTextMessage", async (data) => {
             try{
                 /** Handling Outgoing Text-Messages **/
-                const { leadPhoneNumber, salesAgentId, messagedetails } = data;
+                const { leadPhoneNumber, salesAgentId,messagedetails } = data;
 
                 //Use utilsText function
-                const result = await handleTextMessageFlow(leadPhoneNumber, salesAgentId, messagedetails);
-                if(!result){
-                    throw new Error("Failed to create or retrieve conversation.");
+                const response = await handleTextMessageFlow(leadPhoneNumber, salesAgentId, messagedetails);
+                if(response.success){
+                    socket.emit("messageSentSucess", response);
+                }else{
+                    socket.emit("messageSentError", response);
                 }
-                const { conversation } = result
+                const { conversation } = response.data?.conversation
                 console.log(`Message sent successfully in conversation: ${conversation.id}`);
             }catch(error){
-                console.error(error)
+                console.error("Socket Error:", error)
+                socket.emit("messageSentError", {success:false, message:"Internal Server Error"});
             }
         });
 
