@@ -8,7 +8,7 @@ import multer from "multer";
 import {verifyWebhook} from "../helper/utils";
 // import {handleIncomingMessages} from "../controllers/webhookController";
 // import {sendMessage} from "../sockets/socketHandler"
-import whatsAppMessagingService from "../controllers/services/whatsAppMessagingService";
+import whatsAppService from "../controllers/services/whatsAppService";
 
 const router:Router = express.Router();
 
@@ -19,9 +19,10 @@ const upload = multer({storage});
 router.get("/webhook", verifyWebhook);
 // router.post("/webhook", handleIncomingMessages);
 
-router.post("/messages/send",whatsAppMessagingService.sendTextMessage);
-router.post("/message/template",whatsAppMessagingService.sendTemplateMessage);
+router.post("/messages/send",whatsAppService.sendTextMessage);
+router.post("/message/template",whatsAppService.sendTemplateMessage);
 
+router.get("/templates", whatsAppService.getTemplates)
 
 router.get("/messages/status");     //webhook message-echoes
 

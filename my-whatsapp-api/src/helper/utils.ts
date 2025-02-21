@@ -5,6 +5,7 @@ import axios from "axios";
 import { Leads } from "../models/leadModel";
 import { Conversations } from "../models/conversationModel";
 import { Messages } from "../models/messageModel";
+import { Templates } from "../models/templateModel";
 // import whatsAppMessagingService from "../controllers/services/whatsAppMessagingService";
 
 dotenv.config({ path: "../../.env" });
@@ -14,6 +15,13 @@ dotenv.config({ path: "../../.env" });
 interface createLeadConversations{
     salesAgentId:string,
     leadDetails:any
+}
+
+interface templateDetails{
+    templateId:string,
+    name:string,
+    body:Text,
+    parameterName: []
 }
 
 export const axiosInstance = axios.create({
@@ -130,5 +138,52 @@ export const handleTemplateMessageFlow = async(leadPhoneNumber: number, salesAge
         return {conversation};
     }catch(error){
         console.error(error);
+    }
+}
+
+// function extractParameterNames(text) {
+//     const paramRegex = /\*?\{\{(.*?)\}\}\*?/g;
+//     const matches = [...text.matchAll(paramRegex)];
+//     return matches.map(match => match[1]);  // Extract only parameter name
+// };
+
+function extractParameterNames(text:string){
+    const paramRegex = /\*?{\{(.*?)\}\}\*?/g;
+    const matches = [...text.matchAll(paramRegex)];
+    return matches.map(match => match[1]);
+}
+
+export const extractTemplateDetails = async(templatesData:any) => {
+    try{
+        return  templatesData.map(async(template:any)=>{
+            const templateDetails : any = {
+                templateId : template.id,
+                templateName: template.name,
+                templateBody: JSON.stringify(template.components.find((comp:any)=> comp.type ==="BODY")?.text || ""),
+            }
+    
+            let allTexts: string[] = []
+    
+            template.components.forEach((component:any)=>{
+                if(component.text){
+                    allTexts.push(component.text)
+                }
+            })
+    
+            const allParameterNames = [...new Set(allTexts.flatMap(text=> extractParameterNames(text)))]
+            templateDetails.parameterName = allParameterNames;
+            const existingTemplate = await Templates.findOne(templateDetails.templateId)
+
+            if(!existingTemplate){
+                await Templates.create(templateDetails)
+            }else{
+                console.log(`Template with ID ${templateDetails.templateId} alreadyExists`)
+            }
+    
+            return templateDetails;
+        })
+    }catch(error:any){
+        console.error("Error Extracting Template details",error.message)
+        return [];
     }
 }
