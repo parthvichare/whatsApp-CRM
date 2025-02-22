@@ -9,6 +9,7 @@ import {verifyWebhook} from "../helper/utils";
 // import {handleIncomingMessages} from "../controllers/webhookController";
 // import {sendMessage} from "../sockets/socketHandler"
 import whatsAppService from "../controllers/services/whatsAppService";
+import { WebhookController } from "../controllers/webhookController";
 
 const router:Router = express.Router();
 
@@ -17,7 +18,7 @@ const upload = multer({storage});
 
 //webhooks
 router.get("/webhook", verifyWebhook);
-// router.post("/webhook", handleIncomingMessages);
+router.post("/webhook", WebhookController.handleWebhook);
 
 router.post("/messages/send",whatsAppService.sendTextMessage);
 router.post("/message/template",whatsAppService.sendTemplateMessage);

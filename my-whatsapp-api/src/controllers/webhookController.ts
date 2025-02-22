@@ -1,75 +1,124 @@
 import { Request, Response } from "express";
 import WhatsApp from "whatsapp"; // WhatsApp SDK
-import MessageModel from "../models/Message"; // Import your message model
-import {whatsAppService} from "../controllers/services/whatsAppService"
+// import Messages from "../models/messageModel"; // Import your message model
+import whatsAppService from "../controllers/services/whatsAppService";
 
-const whatsApp = new WhatsApp();
 
 export class WebhookController {
     
     // Handle incoming webhook events from WhatsApp
     static async handleWebhook(req: Request, res: Response) {
         const data = req.body;
-
-        if (data.object && data.entry) {
-            for (const entry of data.entry) {
-                for (const messagingEvent of entry.messaging) {
-                    if (messagingEvent.message) {
-                        await this.handleIncomingMessage(messagingEvent);
-                    } else if (messagingEvent.status) {
-                        await this.handleMessageStatus(messagingEvent);
-                    }
-                }
-            }
-            return res.status(200).send("EVENT_RECEIVED");
-        }
-        return res.status(404).send("EVENT_NOT_FOUND");
+        console.log("Webhook received:", JSON.stringify(data, null, 2)); // Debugging
+    
+        // if (data.object && data.entry) {
+        //     for (const entry of data.entry) {
+        //         console.log("Entry:", entry);
+    
+        //         if (!entry.changes || !Array.isArray(entry.changes)) {
+        //             console.error("Error: changes property is missing or not an array");
+        //             continue;
+        //         }
+    
+        //         for (const change of entry.changes) {
+        //             if (!change.value || !change.value.messages || !Array.isArray(change.value.messages)) {
+        //                 console.error("Error: messages property is missing or not an array");
+        //                 continue;
+        //             }
+    
+        //             for (const message of change.value.messages) {
+        //                 if (message.from && message.id && message.type) {
+        //                     const senderId = message.from;
+        //                     let messageText = "";
+    
+        //                     // Handle different message types (text, button, etc.)
+        //                     if (message.text) {
+        //                         messageText = message.text.body;
+        //                     } else if (message.button) {
+        //                         messageText = message.button.text;
+        //                     } else {
+        //                         console.log("Unsupported message type:", message.type);
+        //                     }
+    
+        //                     console.log(`Received message from ${senderId}: ${messageText}`);
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     return res.status(200).send("EVENT_RECEIVED");
+        // }
+        // return res.status(404).send("EVENT_NOT_FOUND");
     }
+
+    // static async handleWebhook(req:Request,res:Response){
+    //     const data =  req.body
+    //     console.log("Webhook Received:", JSON.stringify(data, null, 2));
+
+    //     if(data.object && data.entry){
+    //         for(const entry of data.entry){
+    //             console.log("Entry:" entry);
+
+    //             if(!entry.changes || !Array.isArray(entry.changes)){
+    //                 console.log("Error: Changes property is missing or not an array");
+    //                 continue
+    //             }
+
+    //             for(const changes of entry.changes){
+    //                 console.log("Entry:"change);
+    //                 if(!change.value || change.value.messages || !Array.isArray(change.value.message)){
+    //                     console.error("Error: message Property is missing or not an array!")
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    
+    
 
     // Handle incoming messages
-    static async handleIncomingMessage(messagingEvent: any) {
-        const senderId = messagingEvent.sender.id; // Extract sender ID
-        const messageText = messagingEvent.message.text; // Extract message content
+    // static async handleIncomingMessage(messagingEvent: any) {
+    //     const senderId = messagingEvent.sender.id;         // Extract sender ID
+    //     const messageText = messagingEvent.message.text; // Extract message content
 
-        console.log("Received message from ${senderId}: ${messageText}");
+    //     console.log("Received message from ${senderId}: ${messageText}");
 
-        // Store the received message in the database
-        const newMessage = new MessageModel({
-            senderId,
-            messageText,
-            status: "received",
-            timestamp: new Date()
-        });
+    //     // Store the received message in the database
+    //     const newMessage = Messages.create({
+    //         senderId,
+    //         messageText,
+    //         status: "received",
+    //         timestamp: new Date()
+    //     });
 
-        try {
-            await newMessage.save();
-            console.log("Message saved to database.");
-        } catch (error) {
-            console.error("Error saving message to database:", error);
-        }
+    //     try {
+    //         await newMessage.save();
+    //         console.log("Message saved to database.");
+    //     } catch (error) {
+    //         console.error("Error saving message to database:", error);
+    //     }
 
-        // Process the message with business logic
-        await whatsAppService.getMessage({ senderId, messageText });
+    //     // Process the message with business logic
+    //     // await whatsAppService({ senderId, messageText });
 
-        // Auto-reply using WhatsApp SDK
-        await whatsAppService.sendMessage(senderId, "You said: ${messageText}");
-    }
+    //     // Auto-reply using WhatsApp SDK
+    //     // await whatsAppService.sendTextMessage(senderId)
+    // }
 
     // Handle message status updates
-    static async handleMessageStatus(messagingEvent: any) {
-        const messageId = messagingEvent.status.id;
-        const status = messagingEvent.status.status; // Delivered, read, failed, etc.
+    // static async handleMessageStatus(messagingEvent: any) {
+    //     const messageId = messagingEvent.status.id;
+    //     const status = messagingEvent.status.status; // Delivered, read, failed, etc.
 
-        // console.log(Message ${messageId} status updated to: ${status});
+    //     // console.log(Message ${messageId} status updated to: ${status});
 
-        // Update the message status in the database
-        try {
-            await MessageModel.findOneAndUpdate({ _id: messageId }, { status });
-            console.log("Message status updated in database.");
-        } catch (error) {
-            console.error("Error updating message status:", error);
-        }
-    }
+    //     // Update the message status in the database
+    //     try {
+    //         await Messages.findOneAndUpdate({ _id: messageId }, { status });
+    //         console.log("Message status updated in database.");
+    //     } catch (error) {
+    //         console.error("Error updating message status:", error);
+    //     }
+    // }
 }
 
 

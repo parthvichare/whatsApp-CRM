@@ -19,10 +19,6 @@ export class Leads {
         return queryTable(TABLE_NAME,data)
     }
 
-        // static async findByConversationId(conversationId:string){
-        //     const result = await selectFromTable(TABLE_NAME, "*", {conversationId});
-        //     return result.length ? result[0] : null;
-        // }
     static async findByPhoneNumber(phoneNumber:number){
         const result = await selectFromTable(TABLE_NAME, "*", {phoneNumber});
         return result

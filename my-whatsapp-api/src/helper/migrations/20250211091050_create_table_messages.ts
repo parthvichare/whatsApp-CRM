@@ -11,7 +11,7 @@ export async function up(knex: Knex): Promise<void> {
         table.enu("direction", ["incoming","outgoing"]).notNullable()
         table.enu("messageType",["text","image","video","template"]).notNullable();                            //text, image, video
         table.text("messageContent").notNullable();
-        table.uuid("template id").references("id").inTable("templates").onDelete("SET NULL");
+        table.uuid("templateId").references("id").inTable("templates").onDelete("SET NULL");
         table
         .enum("status", ["sent", "delivered", "read"])
         .defaultTo("sent"); // Message status

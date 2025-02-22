@@ -76,7 +76,7 @@ export default class whatsAppService {
   }
 
   //   socket.on("newMessage", whatsAppMessagingService.sendTextMessage)
-static async sendTemplateMessage(req: Request, res: Response) {
+  static async sendTemplateMessage(req: Request, res: Response) {
     try {
       // Get recipient number from request body
       const {
