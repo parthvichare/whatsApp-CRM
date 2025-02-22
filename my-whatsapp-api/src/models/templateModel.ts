@@ -4,7 +4,7 @@ import { queryTable, selectFromTable } from '../helper/knexConfig'; // Adjust pa
 const TABLE_NAME = "templates"
 
 export class Templates{
-    static async create(data: {templateName:string,templateBody:Text, parameterName: string[], templateId:string}){
+    static async create(data: {templateName:string,templateBody:Text, parameterName: string[], templateId:string}) {
         const formattedData ={
             ...data,
             parameterName : JSON.stringify(data.parameterName)   //store as JSON
@@ -12,7 +12,7 @@ export class Templates{
         return queryTable(TABLE_NAME, formattedData)
     }
 
-    static async findOne(templateId:string){
+    static async findOne(templateId:string) {
         try{
             const result = await selectFromTable(TABLE_NAME,"*", {templateId});
         
@@ -26,7 +26,12 @@ export class Templates{
         }
     }
 
-    static async findTemplateById(id:string){
+    static async findByTemplateName(templateName:string){
+        const result = await selectFromTable(TABLE_NAME,"*", {templateName});
+        return result.length? result[0]:null
+    }
+
+    static async findTemplateById(id:string) {
         const result = await selectFromTable(TABLE_NAME,"*", {id});
         return result.length? result[0] : null
     }

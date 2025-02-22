@@ -1,76 +1,76 @@
-// import { Request, Response } from "express";
-// import WhatsApp from "whatsapp"; // WhatsApp SDK
-// import MessageModel from "../models/Message"; // Import your message model
-// import { whatsAppMessagingService } from "../services/whatsAppMessagingService";
+import { Request, Response } from "express";
+import WhatsApp from "whatsapp"; // WhatsApp SDK
+import MessageModel from "../models/Message"; // Import your message model
+import {whatsAppService} from "../controllers/services/whatsAppService"
 
-// const whatsApp = new WhatsApp();
+const whatsApp = new WhatsApp();
 
-// export class WebhookController {
+export class WebhookController {
     
-//     // Handle incoming webhook events from WhatsApp
-//     static async handleWebhook(req: Request, res: Response) {
-//         const data = req.body;
+    // Handle incoming webhook events from WhatsApp
+    static async handleWebhook(req: Request, res: Response) {
+        const data = req.body;
 
-//         if (data.object && data.entry) {
-//             for (const entry of data.entry) {
-//                 for (const messagingEvent of entry.messaging) {
-//                     if (messagingEvent.message) {
-//                         await this.handleIncomingMessage(messagingEvent);
-//                     } else if (messagingEvent.status) {
-//                         await this.handleMessageStatus(messagingEvent);
-//                     }
-//                 }
-//             }
-//             return res.status(200).send("EVENT_RECEIVED");
-//         }
-//         return res.status(404).send("EVENT_NOT_FOUND");
-//     }
+        if (data.object && data.entry) {
+            for (const entry of data.entry) {
+                for (const messagingEvent of entry.messaging) {
+                    if (messagingEvent.message) {
+                        await this.handleIncomingMessage(messagingEvent);
+                    } else if (messagingEvent.status) {
+                        await this.handleMessageStatus(messagingEvent);
+                    }
+                }
+            }
+            return res.status(200).send("EVENT_RECEIVED");
+        }
+        return res.status(404).send("EVENT_NOT_FOUND");
+    }
 
-//     // Handle incoming messages
-//     static async handleIncomingMessage(messagingEvent: any) {
-//         const senderId = messagingEvent.sender.id; // Extract sender ID
-//         const messageText = messagingEvent.message.text; // Extract message content
+    // Handle incoming messages
+    static async handleIncomingMessage(messagingEvent: any) {
+        const senderId = messagingEvent.sender.id; // Extract sender ID
+        const messageText = messagingEvent.message.text; // Extract message content
 
-//         console.log(Received message from ${senderId}: ${messageText});
+        console.log("Received message from ${senderId}: ${messageText}");
 
-//         // Store the received message in the database
-//         const newMessage = new MessageModel({
-//             senderId,
-//             messageText,
-//             status: "received",
-//             timestamp: new Date()
-//         });
+        // Store the received message in the database
+        const newMessage = new MessageModel({
+            senderId,
+            messageText,
+            status: "received",
+            timestamp: new Date()
+        });
 
-//         try {
-//             await newMessage.save();
-//             console.log("Message saved to database.");
-//         } catch (error) {
-//             console.error("Error saving message to database:", error);
-//         }
+        try {
+            await newMessage.save();
+            console.log("Message saved to database.");
+        } catch (error) {
+            console.error("Error saving message to database:", error);
+        }
 
-//         // Process the message with business logic
-//         await whatsAppMessagingService.getMessage({ senderId, messageText });
+        // Process the message with business logic
+        await whatsAppService.getMessage({ senderId, messageText });
 
-//         // Auto-reply using WhatsApp SDK
-//         await whatsApp.sendMessage(senderId, You said: ${messageText});
-//     }
+        // Auto-reply using WhatsApp SDK
+        await whatsAppService.sendMessage(senderId, "You said: ${messageText}");
+    }
 
-//     // Handle message status updates
-//     static async handleMessageStatus(messagingEvent: any) {
-//         const messageId = messagingEvent.status.id;
-//         const status = messagingEvent.status.status; // Delivered, read, failed, etc.
+    // Handle message status updates
+    static async handleMessageStatus(messagingEvent: any) {
+        const messageId = messagingEvent.status.id;
+        const status = messagingEvent.status.status; // Delivered, read, failed, etc.
 
-//         // console.log(Message ${messageId} status updated to: ${status});
+        // console.log(Message ${messageId} status updated to: ${status});
 
-//         // Update the message status in the database
-//         try {
-//             await MessageModel.findOneAndUpdate({ _id: messageId }, { status });
-//             console.log("Message status updated in database.");
-//         } catch (error) {
-//             console.error("Error updating message status:", error);
-//         }
-//     }
-// }
+        // Update the message status in the database
+        try {
+            await MessageModel.findOneAndUpdate({ _id: messageId }, { status });
+            console.log("Message status updated in database.");
+        } catch (error) {
+            console.error("Error updating message status:", error);
+        }
+    }
+}
 
 
 

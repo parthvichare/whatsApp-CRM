@@ -2,9 +2,9 @@ import { Request, Response } from "express";
 import dotenv from "dotenv";
 import {successResponseWithData,errorResponse,notFoundResponse,validationErrorWithData} from  "../helper/apiResponse";
 import axios from "axios";
-import { Leads } from "../models/leadModel";
+import { Leads }         from "../models/leadModel";
 import { Conversations } from "../models/conversationModel";
-import { Messages } from "../models/messageModel";
+import { Messages }      from "../models/messageModel";
 import { Templates } from "../models/templateModel";
 // import whatsAppMessagingService from "../controllers/services/whatsAppMessagingService";
 
@@ -185,5 +185,57 @@ export const extractTemplateDetails = async(templatesData:any) => {
     }catch(error:any){
         console.error("Error Extracting Template details",error.message)
         return [];
+    }
+}
+
+
+export const designTemplateBody = async(templateBody:any) => {
+    try{
+      const templateDetails = await Templates.findByTemplateName(templateBody.templateName)
+      const dataParams = [
+        {
+          type: "text",
+          parameter_name: templateDetails.parameterName[0],
+          text: templateBody.parameterValues[0],
+        },
+        {
+          type: "text",
+          parameter_name: templateDetails.parameterName[1],
+          text: templateBody.parameterValues[1],
+        },
+        {
+          type: "text",
+          parameter_name: templateDetails.parameterName[2],
+          text: templateBody.parameterValues[2],
+        },
+        {
+          type: "text",
+          parameter_name: templateDetails.parameterName[3],
+          text: templateBody.parameterValues[3],
+        },
+        { 
+            type: "text", 
+            parameter_name: templateDetails.parameterName[4], 
+            text: templateBody.parameterValues[4],
+        },
+      ];
+      const payload= {
+        messaging_product: "whatsapp",
+        to:templateBody.receipentNumber,
+        type: "template",
+        template:{
+            name:templateBody.templateName,
+            language: {code:"en"},
+            components:[
+                {
+                  type: "body",
+                  parameters: dataParams
+                }
+            ]
+        }
+      }
+      return payload
+    }catch(error:any){
+        console.error(error.message)
     }
 }
