@@ -6,6 +6,8 @@ import { Leads }         from "../models/leadModel";
 import { Conversations } from "../models/conversationModel";
 import { Messages }      from "../models/messageModel";
 import { Templates } from "../models/templateModel";
+import whatsAppService from "../controllers/services/whatsAppService";
+
 // import whatsAppMessagingService from "../controllers/services/whatsAppMessagingService";
 
 dotenv.config({ path: "../../.env" });
@@ -16,6 +18,8 @@ interface createLeadConversations{
     salesAgentId:string,
     leadDetails:any
 }
+
+
 
 interface templateDetails{
     templateId:string,
@@ -50,27 +54,36 @@ export const verifyWebhook = async (req: Request, res: Response) => {
 };
 
 // Create Lead or Conversation if not available
-export const getOrCreateLeadAndConversation = async (leadPhoneNumber: number,salesAgentId: string,messagedetails: any) => {
+export const getOrCreateLeadAndConversation = async (leadPhoneNumber: any, salesAgentId: string, messageContent: any) => {
   try {
     // Find or Create Lead
+    console.log("leadDetails",leadPhoneNumber,salesAgentId,messageContent)
     let lead = await Leads.findByPhoneNumber(leadPhoneNumber);
+    console.log("Lead", lead)
     if (!lead) {
       lead = await Leads.create({
         phoneNumber: leadPhoneNumber,
-        name: messagedetails.name || "Unknown",
-        salesAgentId,
-        leadStatus: messagedetails.status || "new",
+        name:  "Unknown",
+        salesAgentId:salesAgentId,
+        leadStatus: "cold",
       });
     }
 
     //Find or Create Conversation
+    if (lead) {
+        console.log("LeadId", lead.id);
+    } else {
+        console.error("Lead not found or created!");
+    }
     let conversation = await Conversations.findByLeadId(lead.id);
+    // console.log("Conversation", lead)
     if (!conversation) {
-      conversation = await conversation.create({
+      conversation = await Conversations.create({
         leadId: lead.id,
         assignedTo: salesAgentId,
       });
     }
+    console.log("ConversationId created",conversation)
     return { lead, conversation };
   } catch (error) {
     console.error(error);
@@ -78,28 +91,35 @@ export const getOrCreateLeadAndConversation = async (leadPhoneNumber: number,sal
   }
 };
 
+// handleTemplateMessageFlow(receipentNumber, "9432d4bd-1cbe-4b46-9ef0-1cc66f211527", messageContent)
+
 // //Text Message Handling
-export const handleTextMessageFlow = async (leadPhoneNumber: number, salesAgentId: string, messagedetails:any) => {
+export const handleTextMessageFlow = async (leadPhoneNumber: any, salesAgentId: any, messageContent:any) => {
+    // const result = await getOrCreateLeadAndConversation(leadPhoneNumber,salesAgentId,messageContent);
     try{
-        const result = await getOrCreateLeadAndConversation(leadPhoneNumber,salesAgentId,messagedetails);
-        if(!result){
+        const result = await getOrCreateLeadAndConversation(leadPhoneNumber,salesAgentId,messageContent);
+        if (!result || !result.conversation){
             throw new Error("Failed to create or retrieve conversation.");
         }
         const {conversation} = result
+        console.log("Conversation", conversation);
 
         // const messageResponse = await whatsAppMessagingService.sendTextMessage(messagedetails.messsageContent,messagedetails.messageTo)
-
+        const response:any = await whatsAppService.sendTextMessage(leadPhoneNumber, messageContent);
+        console.log("MessageId", response.data.message.id)
+        
         const messageData = await Messages.createTextMessage({
             conversationId: conversation.id,
             messageFrom: salesAgentId,
             messageTo: leadPhoneNumber,
             direction: "outgoing",
             messageType: "text",
-            messageContent: messagedetails.messageContent,
-            status: messagedetails.status || "send",
-            // messageId: messageResponse.id
-            messageId: messagedetails.id
+            messageContent: messageContent,
+            status: "send",
+            messageId: response?.data?.message.id
         })
+        console.log("MessageData", messageData)
+
         return {success:true, message:"Message Sent Successfully", data:{conversation,messageData}}
     }catch(error){
         if(axios.isAxiosError(error) && error.response){
@@ -113,39 +133,33 @@ export const handleTextMessageFlow = async (leadPhoneNumber: number, salesAgentI
 
 //Template Message Handling
 export const handleTemplateMessageFlow = async(leadPhoneNumber: number, salesAgentId: string, messagedetails:any)=>{
-    try{
-        const result = await getOrCreateLeadAndConversation(leadPhoneNumber,salesAgentId,messagedetails);
-        if(!result){
-            throw new Error("Failed to create or retrieve conversation.");
-        }
-        const{conversation} = result
+    // try{
+    //     const result = await getOrCreateLeadAndConversation(leadPhoneNumber,salesAgentId,messagedetails);
+    //     if(!result){
+    //         throw new Error("Failed to create or retrieve conversation.");
+    //     }
+    //     const{conversation} = result
 
-        await Promise.all([
-            Messages.createTemplateMessage({
-                conversationId:conversation.id,
-                messageFrom: salesAgentId,
-                messageTo: leadPhoneNumber,
-                direction: "outgoing",
-                messageType: "template",
-                messageContent: messagedetails.content,
-                status: messagedetails.status,
-                templateName: messagedetails.templateName,
-                messageId: messagedetails.id
-            }),
-            // whatsAppMessagingService.sendTemplateMessage(messagedetails.messageTo,messagedetails.messageContent)
-        ])
+    //     await Promise.all([
+    //         Messages.createTemplateMessage({
+    //             conversationId:conversation.id,
+    //             messageFrom: salesAgentId,
+    //             messageTo: leadPhoneNumber,
+    //             direction: "outgoing",
+    //             messageType: "template",
+    //             messageContent: messagedetails.content,
+    //             status: messagedetails.status,
+    //             templateName: messagedetails.templateName,
+    //             messageId: messagedetails.id
+    //         }),
+    //         // whatsAppMessagingService.sendTemplateMessage(messagedetails.messageTo,messagedetails.messageContent)
+    //     ])
     
-        return {conversation};
-    }catch(error){
-        console.error(error);
-    }
+    //     return {conversation};
+    // }catch(error){
+    //     console.error(error);
+    // }
 }
-
-// function extractParameterNames(text) {
-//     const paramRegex = /\*?\{\{(.*?)\}\}\*?/g;
-//     const matches = [...text.matchAll(paramRegex)];
-//     return matches.map(match => match[1]);  // Extract only parameter name
-// };
 
 function extractParameterNames(text:string){
     const paramRegex = /\*?{\{(.*?)\}\}\*?/g;

@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import {successResponseWithData,errorResponse,notFoundResponse,validationErrorWithData} from  "../../helper/apiResponse";
 import axios from "axios";
 import { Templates } from "../../models/templateModel";
+import { handleTextMessageFlow,handleTemplateMessageFlow } from "../../helper/utils";
 import { extractTemplateDetails,designTemplateBody } from "../../helper/utils";
 
 import dotenv from "dotenv";
@@ -35,21 +36,21 @@ console.log(process.env.Phone_Number_Id, process.env.ACCESS_TOKEN);
 
 export default class whatsAppService {
   static async sendTextMessage(req: Request, res: Response) {
-    const { messageContent, receipentNumber } = req.body as {
+    const { leadPhoneNumber,messageContent } = req.body as {
+      leadPhoneNumber?: any;
       messageContent?: string;
-      receipentNumber?: string;
     };
-    if (!messageContent || !receipentNumber) {
-      return res
-        .status(400)
-        .json({ error: "Missing messageContent or receipentNumber" });
+    if (!messageContent || !leadPhoneNumber) {
+      return res.status(400).json({ error: "Missing messageContent or receipentNumber" });
     }
 
     const params = {
       messaging_product: "whatsapp",
-      to: receipentNumber,
+      to: leadPhoneNumber,
       text: { body: messageContent },
     };
+    // leadPhoneNumber: number, salesAgentId: string, messagedetails:any
+    await handleTextMessageFlow(leadPhoneNumber, process.env.SalesAgent_Id, messageContent);
 
     try {
       const response = await axiosInstance.post(
@@ -60,18 +61,15 @@ export default class whatsAppService {
 
       if (response.data?.message) {
         const messageId = response.data?.message?.[0]?.id;
-        if (!messageId) {
-          throw new Error(
-            "Failed to retrieve MessageId from WhatsApp API response"
-          );
-        }
-        return res.status(200).json({ messageId, responseData: response.data });
       }
-
-      res.status(500).json({ error: "Unexpected response from WhatsApp API" });
+      return successResponseWithData(res,"Message SentSuccesfully", response.data)
     } catch (error) {
-      console.error("Error in sendTextMessage", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      if(axios.isAxiosError(error) && error.response){
+        const errorMessage = error.response.data?.error?.message || "An error occured";
+        return errorResponse(res, errorMessage)
+    }else{
+        return errorResponse(res,(error as Error).message)
+    }
     }
   }
 

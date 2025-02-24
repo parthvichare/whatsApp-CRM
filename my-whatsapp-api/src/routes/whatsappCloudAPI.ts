@@ -20,7 +20,7 @@ const upload = multer({storage});
 router.get("/webhook", verifyWebhook);
 router.post("/webhook", WebhookController.handleWebhook);
 
-router.post("/messages/send",whatsAppService.sendTextMessage);
+router.post("/messages/text",whatsAppService.sendTextMessage);
 router.post("/message/template",whatsAppService.sendTemplateMessage);
 
 router.get("/templates", whatsAppService.getTemplates)

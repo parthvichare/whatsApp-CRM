@@ -15,12 +15,16 @@ import { Conversations } from "./conversationModel";
 const TABLE_NAME = "leads";
 
 export class Leads {
-    static async create(data:{name:string,phoneNumber:number,salesAgentId:string,leadStatus:string}){
-        return queryTable(TABLE_NAME,data)
+    static async create(data: { name: string, phoneNumber: string, salesAgentId: string, leadStatus: string }) {
+        await queryTable(TABLE_NAME, data);
+        const result = await selectFromTable(TABLE_NAME, "*", { phoneNumber: data.phoneNumber });
+        return result.length ? result[0] : null; // Ensure an object is returned
     }
+    
 
-    static async findByPhoneNumber(phoneNumber:number){
-        const result = await selectFromTable(TABLE_NAME, "*", {phoneNumber});
-        return result
+    static async findByPhoneNumber(phoneNumber: string) {
+        const result = await selectFromTable(TABLE_NAME, "*", { phoneNumber });
+        return result.length ? result[0] : null; // Ensure single object return
     }
+    
 }

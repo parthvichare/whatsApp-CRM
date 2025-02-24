@@ -30,44 +30,44 @@ export const socketController = (server: any): Server => {
 
         // socket.emit("sendTextMessage", { leadPhoneNumber, salesAgentId, messagedetails });  -> Frontend Code
 
-        socket.on("sendTextMessage", async (data) => {
-            try{
-                /** Handling Outgoing Text-Messages **/
-                const { leadPhoneNumber, salesAgentId,messagedetails } = data;
+        // socket.on("sendTextMessage", async (data) => {
+        //     try{
+        //         /** Handling Outgoing Text-Messages **/
+        //         const { leadPhoneNumber, salesAgentId,messagedetails } = data;
 
-                //Use utilsText function
-                const response = await handleTextMessageFlow(leadPhoneNumber, salesAgentId, messagedetails);
-                if(response.success){
-                    socket.emit("messageSentSucess", response);
-                }else{
-                    socket.emit("messageSentError", response);
-                }
-                const { conversation } = response.data?.conversation
-                console.log(`Message sent successfully in conversation: ${conversation.id}`);
-            }catch(error){
-                console.error("Socket Error:", error)
-                socket.emit("messageSentError", {success:false, message:"Internal Server Error"});
-            }
-        });
+        //         //Use utilsText function
+        //         const response = await handleTextMessageFlow(leadPhoneNumber, salesAgentId, messagedetails);
+        //         if(response.success){
+        //             socket.emit("messageSentSucess", response);
+        //         }else{
+        //             socket.emit("messageSentError", response);
+        //         }
+        //         const { conversation } = response.data?.conversation
+        //         console.log(`Message sent successfully in conversation: ${conversation.id}`);
+        //     }catch(error){
+        //         console.error("Socket Error:", error)
+        //         socket.emit("messageSentError", {success:false, message:"Internal Server Error"});
+        //     }
+        // });
 
         // socket.emit("sendTemplateMessage", { leadPhoneNumber, salesAgentId, messagedetails });  -> Frontend Code
-        socket.on("sendTemplateMessage", async(data)=>{
-            /** Handling Outgoing Template-Message */
-            // DEMO = In messageTemplate = {templateId, variables:{product_name,mention_key_benefit,short_description,solve_problem,salesagent_name}}
-            try{
-                const{leadPhoneNumber, salesAgentId, messagedetails} = data;
+        // socket.on("sendTemplateMessage", async(data)=>{
+        //     /** Handling Outgoing Template-Message */
+        //     // DEMO = In messageTemplate = {templateId, variables:{product_name,mention_key_benefit,short_description,solve_problem,salesagent_name}}
+        //     try{
+        //         const{leadPhoneNumber, salesAgentId, messagedetails} = data;
 
-                //Use utilsTemplate functions
-                const result = await handleTemplateMessageFlow(leadPhoneNumber, salesAgentId, messagedetails);
-                if(!result){
-                    throw new Error("Failed to create or retrieve conversation.");
-                }
-                const {conversation} = result
-                console.log(`Message sent successfully in conversation: ${conversation.id}`);
-            }catch(error){
-                console.error(error)
-            }
-        })
+        //         //Use utilsTemplate functions
+        //         const result = await handleTemplateMessageFlow(leadPhoneNumber, salesAgentId, messagedetails);
+        //         if(!result){
+        //             throw new Error("Failed to create or retrieve conversation.");
+        //         }
+        //         const {conversation} = result
+        //         console.log(`Message sent successfully in conversation: ${conversation.id}`);
+        //     }catch(error){
+        //         console.error(error)
+        //     }
+        // })
 
         socket.on("disconnect", () => {
             console.log(`❌ Client Disconnected: ${socket.id}`);

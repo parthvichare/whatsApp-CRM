@@ -19,7 +19,8 @@ export class Conversations {
     }
 
     static async findByLeadId(leadId:string){
-        const result =  await selectFromTable(TABLE_NAME,"*",{leadId});
+        console.log("Finding conversation with leadId:", leadId);
+        const result = await selectFromTable(TABLE_NAME, "*", { leadId });
         return result.length ? result[0]: null
     }
 }

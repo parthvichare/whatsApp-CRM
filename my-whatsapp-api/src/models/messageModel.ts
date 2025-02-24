@@ -5,7 +5,7 @@ const TABLE_NAME = 'messages';
 export class Messages {
     static async createTextMessage(data: {
         conversationId:string,
-        messageId:string,
+        messageId:any,
         messageFrom:string,
         messageTo:number,
         direction:'incoming' | 'outgoing',
