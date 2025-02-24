@@ -1,4 +1,4 @@
-import { queryTable,selectFromTable } from "../helper/knexConfig";
+import { queryTable,selectFromTable,updateTable } from "../helper/knexConfig";
 
 const TABLE_NAME = 'messages';
 
@@ -11,13 +11,15 @@ export class Messages {
         direction:'incoming' | 'outgoing',
         messageType: 'text'|'template',
         messageContent:string,
-        status: 'send'|'delivered' | 'read'
+        status: 'sent'|'delivered' | 'read' | "received"
     }){
-        return queryTable(TABLE_NAME, {
+        await queryTable(TABLE_NAME, {
             ...data,
             conversationId: data.conversationId,
             status: data.status || 'sent',
-        });     
+        });  
+        const result =   await selectFromTable(TABLE_NAME,"*",{messageId: data.messageId})
+        return result.length? result[0]: null
     }
 
     static async createTemplateMessage(data: {
@@ -28,7 +30,7 @@ export class Messages {
         direction:'incoming' | 'outgoing',
         messageType: 'text'|'template',
         messageContent:string,
-        status: 'send'|'delivered' | 'read',
+        status: 'sent'|'delivered' | 'read',
         templateName: string
     }){
         return queryTable(TABLE_NAME, {
@@ -42,5 +44,23 @@ export class Messages {
         const result = await selectFromTable(TABLE_NAME, "*", {conversationId});
         return result.length ? result[0] : null;
     }
+
+    static async findByMessageId(messageId:string){
+        const result = await selectFromTable(TABLE_NAME,"*", {messageId});
+        return result.length ? result[0] : null
+    }
+
+    static async updateMessageStatus(messageId: string, messageStatus: string) {
+        try {
+            // Update the message status in the database
+            const result = await updateTable(TABLE_NAME, { status: messageStatus }, { messageId });
+    
+            return result > 0; // Returns true if update was successful
+        } catch (error) {
+            console.error("❌ Error updating message status:", error);
+            return false;
+        }
+    }
+    
 }
 

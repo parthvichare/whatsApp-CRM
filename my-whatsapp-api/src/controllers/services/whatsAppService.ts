@@ -50,7 +50,6 @@ export default class whatsAppService {
       text: { body: messageContent },
     };
     // leadPhoneNumber: number, salesAgentId: string, messagedetails:any
-    await handleTextMessageFlow(leadPhoneNumber, process.env.SalesAgent_Id, messageContent);
 
     try {
       const response = await axiosInstance.post(
@@ -59,10 +58,14 @@ export default class whatsAppService {
         { headers }
       );
 
-      if (response.data?.message) {
-        const messageId = response.data?.message?.[0]?.id;
+      const messagedetails ={
+        messageContent,
+        messageId: response.data?.messages?.[0]?.id
       }
-      return successResponseWithData(res,"Message SentSuccesfully", response.data)
+      
+      await handleTextMessageFlow(leadPhoneNumber, process.env.SalesAgent_Id, messagedetails);
+
+      return successResponseWithData(res,"Message Sent Succesfully",response.data)
     } catch (error) {
       if(axios.isAxiosError(error) && error.response){
         const errorMessage = error.response.data?.error?.message || "An error occured";

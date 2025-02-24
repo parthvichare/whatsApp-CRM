@@ -1,127 +1,136 @@
 import { Request, Response } from "express";
 import WhatsApp from "whatsapp"; // WhatsApp SDK
-// import Messages from "../models/messageModel"; // Import your message model
+import { Messages } from "../models/messageModel";
 import whatsAppService from "../controllers/services/whatsAppService";
-
+import { Leads } from "../models/leadModel";
+import { Conversations } from "../models/conversationModel";
 
 export class WebhookController {
     
     // Handle incoming webhook events from WhatsApp
     static async handleWebhook(req: Request, res: Response) {
-        const data = req.body;
-        console.log("Webhook received:", JSON.stringify(data, null, 2)); // Debugging
+        try {
+            const data = req.body;
+            console.log("Webhook received:", JSON.stringify(data, null, 2)); // Debugging
     
-        // if (data.object && data.entry) {
-        //     for (const entry of data.entry) {
-        //         console.log("Entry:", entry);
+            if (!data.object || !data.entry) {
+                return res.status(400).json({ success: false, message: "Invalid Webhook Payload" });
+            }
     
-        //         if (!entry.changes || !Array.isArray(entry.changes)) {
-        //             console.error("Error: changes property is missing or not an array");
-        //             continue;
-        //         }
+            let messagesProcessed: any[] = []; // Store processed messages
     
-        //         for (const change of entry.changes) {
-        //             if (!change.value || !change.value.messages || !Array.isArray(change.value.messages)) {
-        //                 console.error("Error: messages property is missing or not an array");
-        //                 continue;
-        //             }
+            for (const entry of data.entry) {
+                console.log("Entry:", JSON.stringify(entry, null, 2));
     
-        //             for (const message of change.value.messages) {
-        //                 if (message.from && message.id && message.type) {
-        //                     const senderId = message.from;
-        //                     let messageText = "";
+                for (const change of entry.changes) {
+                    if (!change.value || (!Array.isArray(change.value.messages) && !Array.isArray(change.value.statuses))) {
+                        console.error("Error: Neither 'messages' nor 'statuses' found in change");
+                        continue;
+                    }
     
-        //                     // Handle different message types (text, button, etc.)
-        //                     if (message.text) {
-        //                         messageText = message.text.body;
-        //                     } else if (message.button) {
-        //                         messageText = message.button.text;
-        //                     } else {
-        //                         console.log("Unsupported message type:", message.type);
-        //                     }
+                    // Handle Incoming Messages
+                    if (Array.isArray(change.value.messages)) {
+                        for (const message of change.value.messages) {
+                            if (message.from && message.id && message.type) {
+                                let messageEvent = {
+                                    messageType: message.type,
+                                    messageContent: message.text ? message.text.body : "",
+                                    leadPhoneNumber: message.from,
+                                    messageId: message.id
+                                };
     
-        //                     console.log(`Received message from ${senderId}: ${messageText}`);
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     return res.status(200).send("EVENT_RECEIVED");
-        // }
-        // return res.status(404).send("EVENT_NOT_FOUND");
+                                if (messageEvent.messageContent) {
+                                    await WebhookController.handleIncomingMessage(messageEvent);
+                                }
+                                console.log(`Received message from ${message.from}:`, JSON.stringify(messageEvent, null, 2));
+                            }
+                        }
+                    }
+    
+                    // Handle Status Updates
+                    if (Array.isArray(change.value.statuses)) {
+                        console.log("Statuses detected:", JSON.stringify(change.value.statuses, null, 2));
+    
+                        for (const status of change.value.statuses) {
+                            if (status.id) {
+                                const messageStatus = {
+                                    messageId: status.id,
+                                    messageStatus: status.status ? status.status : "unknown"
+                                };
+    
+                                console.log("Processing Message Status:", messageStatus);
+    
+                                if (messageStatus.messageStatus) {
+                                    await WebhookController.handleMessageStatus(messageStatus);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Webhook handling error:", error);
+            return res.status(500).json({ success: false, message: "Internal Server Error" });
+        }
     }
-
-    // static async handleWebhook(req:Request,res:Response){
-    //     const data =  req.body
-    //     console.log("Webhook Received:", JSON.stringify(data, null, 2));
-
-    //     if(data.object && data.entry){
-    //         for(const entry of data.entry){
-    //             console.log("Entry:" entry);
-
-    //             if(!entry.changes || !Array.isArray(entry.changes)){
-    //                 console.log("Error: Changes property is missing or not an array");
-    //                 continue
-    //             }
-
-    //             for(const changes of entry.changes){
-    //                 console.log("Entry:"change);
-    //                 if(!change.value || change.value.messages || !Array.isArray(change.value.message)){
-    //                     console.error("Error: message Property is missing or not an array!")
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
     
-    
+
 
     // Handle incoming messages
-    // static async handleIncomingMessage(messagingEvent: any) {
-    //     const senderId = messagingEvent.sender.id;         // Extract sender ID
-    //     const messageText = messagingEvent.message.text; // Extract message content
-
-    //     console.log("Received message from ${senderId}: ${messageText}");
-
-    //     // Store the received message in the database
-    //     const newMessage = Messages.create({
-    //         senderId,
-    //         messageText,
-    //         status: "received",
-    //         timestamp: new Date()
-    //     });
-
-    //     try {
-    //         await newMessage.save();
-    //         console.log("Message saved to database.");
-    //     } catch (error) {
-    //         console.error("Error saving message to database:", error);
-    //     }
-
-    //     // Process the message with business logic
-    //     // await whatsAppService({ senderId, messageText });
-
-    //     // Auto-reply using WhatsApp SDK
-    //     // await whatsAppService.sendTextMessage(senderId)
-    // }
+    static async handleIncomingMessage(messagingEvent: any) {
+        const{leadPhoneNumber,messageType,messageContent, messageId} =  messagingEvent
+        console.log("Incoming Message",messageContent)
+        try{
+            const lead =  await Leads.findByPhoneNumber(leadPhoneNumber);
+            const conversation = await Conversations.findByLeadId(lead.id)
+            
+            const messageData = await Messages.createTextMessage({
+                conversationId: conversation.id,
+                messageFrom: leadPhoneNumber,
+                messageTo: conversation.assignedTo,
+                direction: "incoming",
+                messageType: messageType,
+                messageContent: messageContent,
+                status: "delivered",
+                messageId: messageId
+            })
+            console.log("Message Stored Successfuly:",messageData)
+        }catch(error){
+            console.error(error)
+        }
+    }
 
     // Handle message status updates
-    // static async handleMessageStatus(messagingEvent: any) {
-    //     const messageId = messagingEvent.status.id;
-    //     const status = messagingEvent.status.status; // Delivered, read, failed, etc.
-
-    //     // console.log(Message ${messageId} status updated to: ${status});
-
-    //     // Update the message status in the database
-    //     try {
-    //         await Messages.findOneAndUpdate({ _id: messageId }, { status });
-    //         console.log("Message status updated in database.");
-    //     } catch (error) {
-    //         console.error("Error updating message status:", error);
-    //     }
-    // }
+    static async handleMessageStatus(status: any) {
+        try {
+            const { messageId, messageStatus } = status;
+            // Update the message status
+            const updated = await Messages.updateMessageStatus(messageId, messageStatus);
+        } catch (error) {
+            console.error("❌ Error updating message status:", error);
+        }
+    }    
 }
 
 
+
+
+
+
+    // messageType: 'text',
+    // messageContent: 'hi',
+    // leadPhoneNumber: '919372597458',
+    // messageId: 'wamid.HBgMOTE5MzcyNTk3NDU4FQIAEhgWM0VCMEQ2Qzc2QjcyQzhCNDI3RDM4NgA='
+        // W
+    // messageEvent ={
+    //  leadPhoneNumber :
+    //  messageText:
+    //  messageId : 
+    // }
+
+    // const lead= findByPhoneNumber(leadPhoneNumber)
+    // const conversation = findByleadId(lead.id)
+    
 
 
 
@@ -257,3 +266,55 @@ export class WebhookController {
 //     // Always respond with a 200 status code to acknowledge receipt of the message
 //     res.status(200).json({status: 'success', message: 'Message processed'});
 // });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // static async handleWebhook(req:Request,res:Response){
+    //     const data =  req.body
+    //     console.log("Webhook Received:", JSON.stringify(data, null, 2));
+
+    //     if(data.object && data.entry){
+    //         for(const entry of data.entry){
+    //             console.log("Entry:" entry);
+
+    //             if(!entry.changes || !Array.isArray(entry.changes)){
+    //                 console.log("Error: Changes property is missing or not an array");
+    //                 continue
+    //             }
+
+    //             for(const changes of entry.changes){
+    //                 console.log("Entry:"change);
+    //                 if(!change.value || change.value.messages || !Array.isArray(change.value.message)){
+    //                     console.error("Error: message Property is missing or not an array!")
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+    
+    // W
+    // messageEvent ={
+    //  leadPhoneNumber :
+    //  messageText:
+    //  messageId : 
+    // }
+
+    // const lead= findByPhoneNumber(leadPhoneNumber)
+    // const conversation = findByleadId(lead.id)
+    

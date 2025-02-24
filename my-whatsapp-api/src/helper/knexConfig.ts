@@ -34,3 +34,6 @@ export const selectFromTable = (tableName:string, columns = '*', whereClause = {
 };
 
 
+export const updateTable = (tableName: string, updateData: any, whereClause: any) => {
+  return db(tableName).where(whereClause).update(updateData);
+};

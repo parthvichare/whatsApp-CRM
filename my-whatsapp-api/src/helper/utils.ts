@@ -54,10 +54,10 @@ export const verifyWebhook = async (req: Request, res: Response) => {
 };
 
 // Create Lead or Conversation if not available
-export const getOrCreateLeadAndConversation = async (leadPhoneNumber: any, salesAgentId: string, messageContent: any) => {
+export const getOrCreateLeadAndConversation = async (leadPhoneNumber: any, salesAgentId: string, ) => {
   try {
     // Find or Create Lead
-    console.log("leadDetails",leadPhoneNumber,salesAgentId,messageContent)
+    console.log("leadDetails",leadPhoneNumber,salesAgentId)
     let lead = await Leads.findByPhoneNumber(leadPhoneNumber);
     console.log("Lead", lead)
     if (!lead) {
@@ -94,19 +94,16 @@ export const getOrCreateLeadAndConversation = async (leadPhoneNumber: any, sales
 // handleTemplateMessageFlow(receipentNumber, "9432d4bd-1cbe-4b46-9ef0-1cc66f211527", messageContent)
 
 // //Text Message Handling
-export const handleTextMessageFlow = async (leadPhoneNumber: any, salesAgentId: any, messageContent:any) => {
+export const handleTextMessageFlow = async (leadPhoneNumber: any, salesAgentId: any, messagedetails:any) => {
     // const result = await getOrCreateLeadAndConversation(leadPhoneNumber,salesAgentId,messageContent);
+    console.log("MesageDetails Utils",messagedetails)
     try{
-        const result = await getOrCreateLeadAndConversation(leadPhoneNumber,salesAgentId,messageContent);
+        const result = await getOrCreateLeadAndConversation(leadPhoneNumber,salesAgentId);
         if (!result || !result.conversation){
             throw new Error("Failed to create or retrieve conversation.");
         }
         const {conversation} = result
-        console.log("Conversation", conversation);
-
-        // const messageResponse = await whatsAppMessagingService.sendTextMessage(messagedetails.messsageContent,messagedetails.messageTo)
-        const response:any = await whatsAppService.sendTextMessage(leadPhoneNumber, messageContent);
-        console.log("MessageId", response.data.message.id)
+        console.log("Conversation", conversation.id);
         
         const messageData = await Messages.createTextMessage({
             conversationId: conversation.id,
@@ -114,9 +111,9 @@ export const handleTextMessageFlow = async (leadPhoneNumber: any, salesAgentId: 
             messageTo: leadPhoneNumber,
             direction: "outgoing",
             messageType: "text",
-            messageContent: messageContent,
-            status: "send",
-            messageId: response?.data?.message.id
+            messageContent: messagedetails.messageContent,
+            status: "sent",
+            messageId: messagedetails.messageId
         })
         console.log("MessageData", messageData)
 
