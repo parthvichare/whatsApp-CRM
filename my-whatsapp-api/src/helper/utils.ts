@@ -266,7 +266,7 @@ export const designTemplateBody = async(templateBody:any) => {
 export const UpdateLeadStatus=async(leadPhoneNumber:string,messageTemplate:string)=>{
     const lead = await Leads.findByPhoneNumber(leadPhoneNumber)
     console.log(lead)
-    if(messageTemplate === "No, not at the Moment" || "No" ){
+    if(messageTemplate === "No, not at the Moment" ){
        const updateleadStatus = await Leads.updateLeadStatus(lead.id,"notInterested")
        console.log("updateLeadStatus",updateleadStatus)
     }else if (messageTemplate === "Yes,I loved to Know more"){

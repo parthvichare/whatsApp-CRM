@@ -4,6 +4,8 @@ import { userInfo } from "os";
 import { SalesAgent } from "../models/salesAgent";
 import { handleTemplateMessageFlow,handleTextMessageFlow } from "../helper/utils";
 import { Messages } from "../models/messageModel";
+import whatsAppService from "../controllers/services/whatsAppService";
+import { successResponse,successResponseWithData,errorResponse } from "../helper/apiResponse";
 // import whatsAppMessagingService from "../controllers/services/whatsAppMessagingService";
 
 let io: Server | null = null; // Declare io as null initially
@@ -14,6 +16,50 @@ let io: Server | null = null; // Declare io as null initially
         
 //     }
 // }
+
+
+
+// static async sendTextMessage(req: Request, res: Response) {
+//     const { leadPhoneNumber,messageContent } = req.body as {
+//       leadPhoneNumber?: any;
+//       messageContent?: string;
+//     };
+//     if (!messageContent || !leadPhoneNumber) {
+//       return res.status(400).json({ error: "Missing messageContent or receipentNumber" });
+//     }
+
+//     const params = {
+//       messaging_product: "whatsapp",
+//       to: leadPhoneNumber,
+//       text: { body: messageContent },
+//     };
+//     // leadPhoneNumber: number, salesAgentId: string, messagedetails:any
+
+//     try {
+//       const response = await axiosInstance.post(
+//         `/${process.env.Phone_Number_Id}/messages`,
+//         params,
+//         { headers }
+//       );
+
+//       const messagedetails ={
+//         messageContent,
+//         messageId: response.data?.messages?.[0]?.id
+//       }
+      
+//       await handleTextMessageFlow(leadPhoneNumber, process.env.SalesAgent_Id, messagedetails);
+
+//       return successResponseWithData(res,"Message Sent Succesfully",response.data)
+//     } catch (error) {
+//       if(axios.isAxiosError(error) && error.response){
+//         const errorMessage = error.response.data?.error?.message || "An error occured";
+//         return errorResponse(res, errorMessage)
+//     }else{
+//         return errorResponse(res,(error as Error).message)
+//     }
+//     }
+//   }
+
 
 export const socketController = (server: any): Server => {
     io = new Server(server, { cors: { origin: "*" } });
@@ -28,27 +74,24 @@ export const socketController = (server: any): Server => {
             }
         })
 
+        
+
         // socket.emit("sendTextMessage", { leadPhoneNumber, salesAgentId, messagedetails });  -> Frontend Code
 
-        // socket.on("sendTextMessage", async (data) => {
-        //     try{
-        //         /** Handling Outgoing Text-Messages **/
-        //         const { leadPhoneNumber, salesAgentId,messagedetails } = data;
-
-        //         //Use utilsText function
-        //         const response = await handleTextMessageFlow(leadPhoneNumber, salesAgentId, messagedetails);
-        //         if(response.success){
-        //             socket.emit("messageSentSucess", response);
-        //         }else{
-        //             socket.emit("messageSentError", response);
-        //         }
-        //         const { conversation } = response.data?.conversation
-        //         console.log(`Message sent successfully in conversation: ${conversation.id}`);
-        //     }catch(error){
-        //         console.error("Socket Error:", error)
-        //         socket.emit("messageSentError", {success:false, message:"Internal Server Error"});
-        //     }
-        // });
+        //Socket Connection only for sending Text Message
+        socket.on("sendTextMessage", async (data,callback) => {
+            try{
+                const{leadPhoneNumber, messageContent} = data
+                const{ response}:any= await whatsAppService.sendTextMessage(leadPhoneNumber,messageContent)
+                if (response.success) {
+                    callback({ success: true, message: "Message sent successfully", data: response.data });
+                  } else {
+                    callback({ success: false, error: response.error });
+                  }
+            } catch (error) {
+                callback({ success: false, error: (error as Error).message });
+            }
+        });
 
         // socket.emit("sendTemplateMessage", { leadPhoneNumber, salesAgentId, messagedetails });  -> Frontend Code
         // socket.on("sendTemplateMessage", async(data)=>{

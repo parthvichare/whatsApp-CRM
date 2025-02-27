@@ -65,14 +65,16 @@ export default class whatsAppService {
       
       await handleTextMessageFlow(leadPhoneNumber, process.env.SalesAgent_Id, messagedetails);
 
-      return successResponseWithData(res,"Message Sent Succesfully",response.data)
+      // return successResponseWithData(res,"Message Sent Succesfully",response.data)
+      // return {message:"Message Sent Successfully"}
+      return {success:true,data:response.data};
     } catch (error) {
       if(axios.isAxiosError(error) && error.response){
         const errorMessage = error.response.data?.error?.message || "An error occured";
-        return errorResponse(res, errorMessage)
-    }else{
-        return errorResponse(res,(error as Error).message)
+        // return errorResponse(res, errorMessage)
+        return { success: false, error: errorMessage };
     }
+    return { success: false, error: (error as Error).message };
     }
   }
 
