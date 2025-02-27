@@ -4,6 +4,8 @@ import { Messages } from "../models/messageModel";
 import whatsAppService from "../controllers/services/whatsAppService";
 import { Leads } from "../models/leadModel";
 import { Conversations } from "../models/conversationModel";
+import { Templates } from "../models/templateModel";
+import { UpdateLeadStatus } from "../helper/utils";
 
 export class WebhookController {
     
@@ -27,22 +29,40 @@ export class WebhookController {
                         console.error("Error: Neither 'messages' nor 'statuses' found in change");
                         continue;
                     }
+//                     end-1   |                 "timestamp": "1740646197",
+// backend-1   |                 "type": "button",
+// backend-1   |                 "button": {
+// backend-1   |                   "payload": "No, not at the Moment",
+// backend-1   |                   "text": "No, not at the Moment"
+// backend-1   |                 }
     
                     // Handle Incoming Messages
                     if (Array.isArray(change.value.messages)) {
                         for (const message of change.value.messages) {
                             if (message.from && message.id && message.type) {
-                                let messageEvent = {
-                                    messageType: message.type,
-                                    messageContent: message.text ? message.text.body : "",
-                                    leadPhoneNumber: message.from,
-                                    messageId: message.id
-                                };
-    
-                                if (messageEvent.messageContent) {
-                                    await WebhookController.handleIncomingMessage(messageEvent);
+                                if(message.type === "text"){
+                                    let messageText = {
+                                        messageType: message.type,
+                                        messageText: message.text ? message.text.body : null,
+                                        leadPhoneNumber: message.from,
+                                        messageId: message.id
+                                    };
+                                    await WebhookController.handleIncomingMessage(messageText);
+                                    console.log(`Received message from ${message.from}:`, JSON.stringify(messageText, null, 2));
+                                }else if(message.type==="button"){
+                                    let messageTemplate = {
+                                        messageType: message.type,
+                                        messageTemplate: message.button? message.button.text: null,
+                                        leadPhoneNumber: message.from,
+                                        messageId: message.context.id
+                                    };
+                                    await WebhookController.handleIncomingMessage(messageTemplate);
+                                    console.log(`Received message from ${message.from}:`, JSON.stringify(messageTemplate, null, 2));
                                 }
-                                console.log(`Received message from ${message.from}:`, JSON.stringify(messageEvent, null, 2));
+    
+                                // if (messageEvent.messageText || messageEvent.messageTemplate) {
+                                //     await WebhookController.handleIncomingMessage(messageEvent);
+                                // }
                             }
                         }
                     }
@@ -78,23 +98,44 @@ export class WebhookController {
 
     // Handle incoming messages
     static async handleIncomingMessage(messagingEvent: any) {
-        const{leadPhoneNumber,messageType,messageContent, messageId} =  messagingEvent
-        console.log("Incoming Message",messageContent)
+        const{leadPhoneNumber,messageType,messageText,messageTemplate, messageId} =  messagingEvent
+        if(messageTemplate){
+            await UpdateLeadStatus(leadPhoneNumber,messageTemplate)
+        }
+        console.log("Incoming Message",messageTemplate,messageText)
         try{
             const lead =  await Leads.findByPhoneNumber(leadPhoneNumber);
             const conversation = await Conversations.findByLeadId(lead.id)
-            
-            const messageData = await Messages.createTextMessage({
+            const templateDetails:any = await Messages.findByMessageId(messageId)
+
+            if(messageType === "text"){
+                console.log("Text")
+              const messageData = await Messages.createTextMessage({
                 conversationId: conversation.id,
                 messageFrom: leadPhoneNumber,
                 messageTo: conversation.assignedTo,
                 direction: "incoming",
                 messageType: messageType,
-                messageContent: messageContent,
+                messageContent: messageText,
                 status: "delivered",
                 messageId: messageId
-            })
-            console.log("Message Stored Successfuly:",messageData)
+              })
+              console.log("Message Stored Successfuly:",messageData)
+            }else if(messageType === "button"){
+                const messageData = await Messages.createTemplateMessage({
+                    conversationId:conversation.id,
+                    messageId: messageId,
+                    messageFrom : conversation.assignedTo,
+                    messageTo : leadPhoneNumber,
+                    direction: "incoming",
+                    messageType: "template",
+                    messageContent : messageTemplate,
+                    status: "delivered",
+                    templateName: templateDetails.templateName
+                })
+                console.log("Message Stored Successfuly:",messageData)
+            }
+            
         }catch(error){
             console.error(error)
         }
@@ -109,7 +150,9 @@ export class WebhookController {
         } catch (error) {
             console.error("❌ Error updating message status:", error);
         }
-    }    
+    }
+    
+    
 }
 
 

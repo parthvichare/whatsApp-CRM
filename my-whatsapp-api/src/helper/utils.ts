@@ -91,7 +91,7 @@ export const getOrCreateLeadAndConversation = async (leadPhoneNumber: any, sales
   }
 };
 
-// handleTemplateMessageFlow(receipentNumber, "9432d4bd-1cbe-4b46-9ef0-1cc66f211527", messageContent)
+
 
 // //Text Message Handling
 export const handleTextMessageFlow = async (leadPhoneNumber: any, salesAgentId: any, messagedetails:any) => {
@@ -129,34 +129,42 @@ export const handleTextMessageFlow = async (leadPhoneNumber: any, salesAgentId: 
 
 
 //Template Message Handling
-export const handleTemplateMessageFlow = async(leadPhoneNumber: number, salesAgentId: string, messagedetails:any)=>{
-    // try{
-    //     const result = await getOrCreateLeadAndConversation(leadPhoneNumber,salesAgentId,messagedetails);
-    //     if(!result){
-    //         throw new Error("Failed to create or retrieve conversation.");
-    //     }
-    //     const{conversation} = result
+export const handleTemplateMessageFlow = async(
+    leadPhoneNumber: number,
+    salesAgentId: any, 
+    messageDetails:{
+        parameterValues:[],
+        messageId:string, 
+        templateName:string,
+        templateBody:string 
+    })=>{
+    try{
+        const result = await getOrCreateLeadAndConversation(leadPhoneNumber,salesAgentId);
+        if(!result){
+            throw new Error("Failed to create or retrieve conversation.");
+        }
+        const{conversation} = result
 
-    //     await Promise.all([
-    //         Messages.createTemplateMessage({
-    //             conversationId:conversation.id,
-    //             messageFrom: salesAgentId,
-    //             messageTo: leadPhoneNumber,
-    //             direction: "outgoing",
-    //             messageType: "template",
-    //             messageContent: messagedetails.content,
-    //             status: messagedetails.status,
-    //             templateName: messagedetails.templateName,
-    //             messageId: messagedetails.id
-    //         }),
-    //         // whatsAppMessagingService.sendTemplateMessage(messagedetails.messageTo,messagedetails.messageContent)
-    //     ])
+        const messageData= await Messages.createTemplateMessage({
+            conversationId:conversation.id,
+            messageId: messageDetails.messageId,
+            messageFrom : salesAgentId,
+            messageTo : leadPhoneNumber,
+            direction: "outgoing",
+            messageType: "template",
+            messageContent : messageDetails.templateBody,
+            status: "sent",
+            templateName: messageDetails.templateName
+        })
+        console.log("Message Data stored successfully",messageData)
     
-    //     return {conversation};
-    // }catch(error){
-    //     console.error(error);
-    // }
+        return {success:true, message:"Message Sent Successfully", data:{conversation,messageData}}
+    }catch(error){
+        console.error(error);
+    }
 }
+
+
 
 function extractParameterNames(text:string){
     const paramRegex = /\*?{\{(.*?)\}\}\*?/g;
@@ -199,10 +207,12 @@ export const extractTemplateDetails = async(templatesData:any) => {
     }
 }
 
-
+//Helping to create API request body ready
 export const designTemplateBody = async(templateBody:any) => {
     try{
+      console.log("Template Body",templateBody)
       const templateDetails = await Templates.findByTemplateName(templateBody.templateName)
+      console.log("TemplateDteails", templateDetails)
       const dataParams = [
         {
           type: "text",
@@ -232,7 +242,7 @@ export const designTemplateBody = async(templateBody:any) => {
       ];
       const payload= {
         messaging_product: "whatsapp",
-        to:templateBody.receipentNumber,
+        to:templateBody.leadPhoneNumber,
         type: "template",
         template:{
             name:templateBody.templateName,
@@ -245,8 +255,22 @@ export const designTemplateBody = async(templateBody:any) => {
             ]
         }
       }
-      return payload
+      console.log("PayLoad", payload)
+      return {payload,templateDetails}
     }catch(error:any){
         console.error(error.message)
+    }
+}
+
+
+export const UpdateLeadStatus=async(leadPhoneNumber:string,messageTemplate:string)=>{
+    const lead = await Leads.findByPhoneNumber(leadPhoneNumber)
+    console.log(lead)
+    if(messageTemplate === "No, not at the Moment" || "No" ){
+       const updateleadStatus = await Leads.updateLeadStatus(lead.id,"notInterested")
+       console.log("updateLeadStatus",updateleadStatus)
+    }else if (messageTemplate === "Yes,I loved to Know more"){
+        const updateleadStatus = await Leads.updateLeadStatus(lead.id,"hot")
+        console.log("updateLeadStatus",updateleadStatus)
     }
 }

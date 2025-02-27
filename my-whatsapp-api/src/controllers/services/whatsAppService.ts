@@ -81,36 +81,40 @@ export default class whatsAppService {
     try {
       // Get recipient number from request body
       const {
-        receipentNumber,
+        leadPhoneNumber,
         templateName,
         parameterValues
       } = req.body;
-      if (!receipentNumber) {
+      if (!leadPhoneNumber) {
         return res.status(400).json({ error: "Missing receipentNumber" });
       }
 
-      const templateBody = req.body
-      const payload = await designTemplateBody(templateBody)
+      const templateBody = req.body 
+      console.log("Template",templateBody)
+      const { payload, templateDetails }:any = await designTemplateBody(templateBody);
+      console.log("PayLoadService", payload)
       
 
       // Send request to WhatsApp API
-      const response = await axios.post(
-        `https://graph.facebook.com/v17.0/${process.env.Phone_Number_Id}/messages`,
+      const response = await axiosInstance.post(
+        `/${process.env.Phone_Number_Id}/messages`,
         payload,
         { headers }
       );
 
-      // Check for successful response
-      if (response.data?.messages) {
-        return res.status(200).json({
-          messageId: response.data.messages[0]?.id,
-          responseData: response.data,
-        });
+      const messageDetails={
+        parameterValues,
+        messageId: response.data?.messages?.[0]?.id,
+        // messageId:"wamid.HBgMOTE5MzcyNTk3NDU4FQIAERgSNUVBNzYzRTBFMTA0QTI0OTNDAA==",
+        templateName,
+        templateBody: templateDetails.templateBody
       }
 
-      return res
-        .status(500)
-        .json({ error: "Unexpected response from WhatsApp API" });
+      console.log("Message Details",messageDetails)
+
+      await handleTemplateMessageFlow(leadPhoneNumber,process.env.SalesAgent_Id, messageDetails)
+
+      return successResponseWithData(res,"Message Template Successfully", messageDetails)
     } catch (error: any) {
       console.error(
         "Error in sendTemplateMessage:",
