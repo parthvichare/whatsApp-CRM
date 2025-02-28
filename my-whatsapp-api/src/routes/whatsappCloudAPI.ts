@@ -20,7 +20,17 @@ const upload = multer({storage});
 router.get("/webhook", verifyWebhook);
 router.post("/webhook", WebhookController.handleWebhook);
 
-router.post("/messages/text",whatsAppService.sendTextMessage);
+router.post("/messages/text", async (req, res) => {
+    try {
+      const { leadPhoneNumber, messageContent } = req.body;
+      const response = await whatsAppService.sendTextMessage(leadPhoneNumber, messageContent);
+      return res.json(response);
+    } catch (error) {
+      console.error("❌ Error in API Route:", error);
+    //   return res.status(500).json({ success: false, error: error.message });
+    }
+  });
+  
 router.post("/message/template",whatsAppService.sendTemplateMessage);
 
 router.get("/templates", whatsAppService.getTemplates)

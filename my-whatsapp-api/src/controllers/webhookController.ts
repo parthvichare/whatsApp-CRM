@@ -6,6 +6,9 @@ import { Leads } from "../models/leadModel";
 import { Conversations } from "../models/conversationModel";
 import { Templates } from "../models/templateModel";
 import { UpdateLeadStatus } from "../helper/utils";
+import { getIoInstance } from "../sockets/socketHandler"
+
+const io = getIoInstance()
 
 export class WebhookController {
     
@@ -29,13 +32,7 @@ export class WebhookController {
                         console.error("Error: Neither 'messages' nor 'statuses' found in change");
                         continue;
                     }
-//                     end-1   |                 "timestamp": "1740646197",
-// backend-1   |                 "type": "button",
-// backend-1   |                 "button": {
-// backend-1   |                   "payload": "No, not at the Moment",
-// backend-1   |                   "text": "No, not at the Moment"
-// backend-1   |                 }
-    
+
                     // Handle Incoming Messages
                     if (Array.isArray(change.value.messages)) {
                         for (const message of change.value.messages) {
@@ -99,6 +96,13 @@ export class WebhookController {
     // Handle incoming messages
     static async handleIncomingMessage(messagingEvent: any) {
         const{leadPhoneNumber,messageType,messageText,messageTemplate, messageId} =  messagingEvent
+
+        // ✅ Get the Socket.IO instance
+        // console.l
+        if(io){
+            io.emit("leadMessageReceived", {leadPhoneNumber,messageText})
+        }
+
         if(messageTemplate){
             await UpdateLeadStatus(leadPhoneNumber,messageTemplate)
         }

@@ -60,7 +60,6 @@ let io: Server | null = null; // Declare io as null initially
 //     }
 //   }
 
-
 export const socketController = (server: any): Server => {
     io = new Server(server, { cors: { origin: "*" } });
 
@@ -74,20 +73,17 @@ export const socketController = (server: any): Server => {
             }
         })
 
-        
-
-        // socket.emit("sendTextMessage", { leadPhoneNumber, salesAgentId, messagedetails });  -> Frontend Code
-
         //Socket Connection only for sending Text Message
         socket.on("sendTextMessage", async (data,callback) => {
             try{
+                console.log("sending Message",data)
                 const{leadPhoneNumber, messageContent} = data
-                const{ response}:any= await whatsAppService.sendTextMessage(leadPhoneNumber,messageContent)
-                if (response.success) {
-                    callback({ success: true, message: "Message sent successfully", data: response.data });
-                  } else {
-                    callback({ success: false, error: response.error });
-                  }
+                const success= await whatsAppService.sendTextMessage(leadPhoneNumber,messageContent)
+                if (success) {
+                    callback({ success: true, message: "Message sent successfully", data });
+                }else {
+                    callback({ success: false, Error });
+                }
             } catch (error) {
                 callback({ success: false, error: (error as Error).message });
             }
@@ -121,36 +117,33 @@ export const socketController = (server: any): Server => {
 };
 
 // ✅ Get the existing Socket.IO instance
-export const getIoInstance = (): Server => {
-    if (!io) {
-        throw new Error("⚠️ Socket.IO instance is not initialized");
-    }
-    return io;
+export const getIoInstance = (): Server | null => {
+    return io;  // Prevents crashes
 };
 
-// ✅ Send Message API Controller
-export const sendMessage = async (req: Request, res: Response) => {
-    try {
-        const { to, text } = req.body;
+// // ✅ Send Message API Controller
+// export const sendMessage = async (req: Request, res: Response) => {
+//     try {
+//         const { to, text } = req.body;
 
-        if (!to || !text) {
-            return res.status(400).json({ error: "Missing required fields" });
-        }
+//         if (!to || !text) {
+//             return res.status(400).json({ error: "Missing required fields" });
+//         }
 
-        const messageData = { to, text };
-        console.log("🚀 Sending message:", messageData);
+//         const messageData = { to, text };
+//         console.log("🚀 Sending message:", messageData);
 
-        // Ensure Socket.IO is initialized before emitting
-        try {
-            const ioInstance = getIoInstance();
-            ioInstance.emit("receiveMessage", messageData);
-            return res.json({ success: true, message: "Message sent successfully" });
-        } catch (error) {
-            console.error("⚠️ Socket.IO not initialized");
-            return res.status(500).json({ error: "Socket.IO not initialized" });
-        }
-    } catch (error) {
-        console.error("❌ Error sending message:", error);
-        return res.status(500).json({ error: "Internal server error" });
-    }
-};
+//         // Ensure Socket.IO is initialized before emitting
+//         try {
+//             const ioInstance = getIoInstance();
+//             ioInstance.emit("receiveMessage", messageData);
+//             return res.json({ success: true, message: "Message sent successfully" });
+//         } catch (error) {
+//             console.error("⚠️ Socket.IO not initialized");
+//             return res.status(500).json({ error: "Socket.IO not initialized" });
+//         }
+//     } catch (error) {
+//         console.error("❌ Error sending message:", error);
+//         return res.status(500).json({ error: "Internal server error" });
+//     }
+// };
