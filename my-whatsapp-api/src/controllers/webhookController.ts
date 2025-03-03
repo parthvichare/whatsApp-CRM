@@ -72,7 +72,7 @@ export class WebhookController {
                             if (status.id) {
                                 const messageStatus = {
                                     messageId: status.id,
-                                    messageStatus: status.status ? status.status : "unknown"
+                                    messageStatus: status.status ? status.status : "unknow"
                                 };
     
                                 console.log("Processing Message Status:", messageStatus);

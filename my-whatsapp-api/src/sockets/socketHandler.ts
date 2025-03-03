@@ -77,8 +77,8 @@ export const socketController = (server: any): Server => {
         socket.on("sendTextMessage", async (data,callback) => {
             try{
                 console.log("sending Message",data)
-                const{leadPhoneNumber, messageContent} = data
-                const success= await whatsAppService.sendTextMessage(leadPhoneNumber,messageContent)
+                const{leadPhoneNumber, messageContent,salesAgentId} = data
+                const success= await whatsAppService.sendTextMessage(leadPhoneNumber,messageContent,salesAgentId)
                 if (success) {
                     callback({ success: true, message: "Message sent successfully", data });
                 }else {

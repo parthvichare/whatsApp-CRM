@@ -35,8 +35,8 @@ console.log(process.env.Phone_Number_Id, process.env.ACCESS_TOKEN);
 
 
 export default class whatsAppService {
-  static async sendTextMessage(leadPhoneNumber: string, messageContent: string) {
-    console.log("sendTextMessage", leadPhoneNumber,messageContent )
+  static async sendTextMessage(leadPhoneNumber: string, messageContent: string, salesAgentId:string) {
+    console.log("sendTextMessage", leadPhoneNumber,messageContent,salesAgentId )
     try {
       if (!leadPhoneNumber || !messageContent) {
         return { success: false, error: "Missing messageContent or leadPhoneNumber" };
@@ -67,7 +67,7 @@ export default class whatsAppService {
         messageId: response.data?.messages?.[0]?.id || "Unknown",
       };
 
-      await handleTextMessageFlow(leadPhoneNumber, process.env.SalesAgent_Id, messagedetails);
+      await handleTextMessageFlow(leadPhoneNumber, salesAgentId, messagedetails);
 
       return { success: true, message: "Message Sent Successfully", data: response.data };
     } catch (error) {
@@ -81,7 +81,7 @@ export default class whatsAppService {
     }
   }
 
-  //   socket.on("newMessage", whatsAppMessagingService.sendTextMessage)
+
   static async sendTemplateMessage(req: Request, res: Response) {
     try {
       // Get recipient number from request body
@@ -110,7 +110,6 @@ export default class whatsAppService {
       const messageDetails={
         parameterValues,
         messageId: response.data?.messages?.[0]?.id,
-        // messageId:"wamid.HBgMOTE5MzcyNTk3NDU4FQIAERgSNUVBNzYzRTBFMTA0QTI0OTNDAA==",
         templateName,
         templateBody: templateDetails.templateBody
       }
@@ -134,94 +133,6 @@ export default class whatsAppService {
     }
   }
 
-  // static async sendTemplateMessage(req: Request, res: Response) {
-  //   try {
-  //     // Get recipient number from request body
-  //     const {
-  //       receipentNumber,
-  //       templateName,
-  //       parameterValues
-  //     } = req.body;
-  //     if (!receipentNumber) {
-  //       return res.status(400).json({ error: "Missing receipentNumber" });
-  //     }
-
-  //     const templateDetails = Templates.findByTemplateName("productmarketing")
-  //     console.log(templateDetails);
-
-  //     // Template message parameters
-  //     const dataParams = [
-  //       {
-  //         type: "text",
-  //         parameter_name: "product_name",
-  //         text: "AI-Powered CRM",
-  //       },
-  //       {
-  //         type: "text",
-  //         parameter_name: "mention_key_benefit",
-  //         text: "Streamline your sales and customer management effortlessly.",
-  //       },
-  //       {
-  //         type: "text",
-  //         parameter_name: "short_description",
-  //         text: "Intelligent CRM system",
-  //       },
-  //       {
-  //         type: "text",
-  //         parameter_name: "solve_problem",
-  //         text: "Automate follow-ups, analyze customer interactions, and improve conversion rates.",
-  //       },
-  //       { type: "text", parameter_name: "salesagent_name", text: "Sarah" },
-  //     ];
-
-  //     // WhatsApp message payload
-      // const payload = {
-      //   messaging_product: "whatsapp",
-      //   to: receipentNumber,
-      //   type: "template",
-      //   template: {
-      //     name: "productmarketing",
-      //     language: { code: "en" },
-      //     components: [
-      //       {
-      //         type: "body",
-      //         parameters: dataParams,
-      //       },
-      //     ],
-      //   },
-      // };
-
-  //     // Send request to WhatsApp API
-  //     const response = await axios.post(
-  //       `https://graph.facebook.com/v17.0/${process.env.Phone_Number_Id}/messages`,
-  //       payload,
-  //       { headers }
-  //     );
-
-  //     // Check for successful response
-  //     if (response.data?.messages) {
-  //       return res.status(200).json({
-  //         messageId: response.data.messages[0]?.id,
-  //         responseData: response.data,
-  //       });
-  //     }
-
-  //     return res
-  //       .status(500)
-  //       .json({ error: "Unexpected response from WhatsApp API" });
-  //   } catch (error: any) {
-  //     console.error(
-  //       "Error in sendTemplateMessage:",
-  //       error?.response?.data || error.message
-  //     );
-  //     return res
-  //       .status(500)
-  //       .json({
-  //         error: "Internal Server Error",
-  //         details: error?.response?.data,
-  //       });
-  //   }
-  // }
 
   static async getMessage(req: Request, res: Response) {
     //Incoming Message stored of each salesAgents
@@ -250,5 +161,8 @@ export default class whatsAppService {
   }
 
   static getTemplateById(req: Request, res: Response) {
+    //Query the templateBody from the database
   }
+
+
 }

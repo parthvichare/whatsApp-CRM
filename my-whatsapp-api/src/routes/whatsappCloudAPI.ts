@@ -22,8 +22,8 @@ router.post("/webhook", WebhookController.handleWebhook);
 
 router.post("/messages/text", async (req, res) => {
     try {
-      const { leadPhoneNumber, messageContent } = req.body;
-      const response = await whatsAppService.sendTextMessage(leadPhoneNumber, messageContent);
+      const { leadPhoneNumber, messageContent,salesAgentId } = req.body;
+      const response = await whatsAppService.sendTextMessage(leadPhoneNumber, messageContent,salesAgentId);
       return res.json(response);
     } catch (error) {
       console.error("❌ Error in API Route:", error);
