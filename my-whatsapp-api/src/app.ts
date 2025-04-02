@@ -8,15 +8,6 @@ import cors from "cors";
 
 const app = express();
 
-
-app.use(cors({
-    origin: [
-      "http://localhost:3000",  // for local development
-    ],
-    methods: ["GET","PATCH","DELETE","PUT","POST"],
-    credentials: true,
-  }));
-
 app.use(express.urlencoded({extended:false}));
 
 app.use(express.json());

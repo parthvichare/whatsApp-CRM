@@ -5,7 +5,7 @@ export async function up(knex: Knex): Promise<void> {
     return knex.schema.createTable("leads", (table)=>{
         table.uuid("id").defaultTo(knex.raw("gen_random_uuid()")).notNullable().primary();
         table.string("name").notNullable();
-        table.integer("phoneNumber").unique().notNullable();
+        table.string("phoneNumber").unique().notNullable();
         table.uuid("salesAgentId").notNullable().references("id").inTable("salesAgent").onDelete("SET NULL");
         table
         .enum("leadStatus",["hot","cold","notInterested","converted"])

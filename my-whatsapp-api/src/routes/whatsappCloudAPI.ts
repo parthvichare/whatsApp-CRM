@@ -1,5 +1,6 @@
 import express,{Router} from "express";
 import { Request, Response } from "express";
+import rateLimit from "express-rate-limit"
 
 // import { handleWebhook } from "../controllers/webhookController";
 // import { createBusinessProfile,editBusinessProfile,getBusinessProfileSection,sendTextMessage } from "../services/messages/whatsappCloudAPI";
@@ -16,9 +17,16 @@ const router:Router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({storage});
 
+//Webhook API request
+const webhookRateLimiter = rateLimit({
+  windowMs: 1000, // 1 second
+  max: 5, // Allow only 5 requests per second
+  message: "Too many requests, please slow down.",
+});
+
 //webhooks
 router.get("/webhook", verifyWebhook);
-router.post("/webhook", WebhookController.handleWebhook);
+router.post("/webhook",webhookRateLimiter, WebhookController.handleWebhook);
 
 router.post("/messages/text", async (req, res) => {
     try {
@@ -38,7 +46,36 @@ router.get("/templates", whatsAppService.getTemplates)
 router.get("/messages/status");     //webhook message-echoes
 
 
+router.get("/storedTemplates", whatsAppService.fetchStoredTemplates);
 
+router.get("/templates/:id", whatsAppService.fetchTemplateById);
+
+
+// Template Data Routes
+router.post("/templateData", whatsAppService.storedTemplateData)
+router.get("/templateData", whatsAppService.fetchStoredParameterValues)
+router.get("/templateData/:id", whatsAppService.fetchParameterValuesById)
+
+
+router.get("/:salesAgentId/leads",whatsAppService.salesAgentLeads)
+router.get("/:salesAgentId/profile",whatsAppService.salesAgentProfile)
+router.get("/:conversationId/chats", whatsAppService.salesAgentChats)
+
+router.get("/salesAgent/template", (req, res) => {
+  const { status } = req.query; // Extract status from query params
+
+  if (status === "all") {
+    return whatsAppService.fetchStoredTemplates(req, res);
+  } else if (status === "approved") {
+    return whatsAppService.fetchStoredParameterValues(req, res);
+  } else {
+    return res.status(400).json({ error: "Invalid status value" });
+  }
+});
+
+// router.get("/salesAgent/template?status=approved", whatsAppService.fetchStoredParameterValues)
+
+router.patch("/templates/:id", whatsAppService.updateTemplateData)
 
 
 

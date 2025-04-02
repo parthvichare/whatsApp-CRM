@@ -7,11 +7,12 @@ export async function up(knex: Knex): Promise<void> {
         table.uuid("conversationId").references("id").inTable("conversations").onDelete("CASCADE");
         table.string("messageId").notNullable();
         table.string("messageFrom").notNullable();
-        table.string("messageTo").notNullable();
+        table.integer("messageTo",12).notNullable();
         table.enu("direction", ["incoming","outgoing"]).notNullable()
         table.enu("messageType",["text","image","video","template"]).notNullable();                            //text, image, video
         table.text("messageContent").notNullable();
         table.uuid("templateId").references("id").inTable("templates").onDelete("SET NULL");
+        table.string("templateName",255).nullable()
         table
         .enum("status", ["sent", "delivered", "read"])
         .defaultTo("sent"); // Message status
@@ -23,3 +24,16 @@ export async function up(knex: Knex): Promise<void> {
 export async function down(knex: Knex): Promise<void> {
     return knex.schema.dropTable("messages");
 }
+
+
+
+// static async createTextMessage(data: {
+//     conversationId:string,
+//     messageId:any,
+//     messageFrom:string,
+//     messageTo:number,
+//     direction:'incoming' | 'outgoing',
+//     messageType: 'text'|'template',
+//     messageContent:string,
+//     status: 'sent'|'delivered' | 'read' | "received"
+// }){

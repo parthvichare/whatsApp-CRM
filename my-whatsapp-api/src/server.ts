@@ -1,23 +1,43 @@
-import app from "./app";
-import { socketController } from "./sockets/socketHandler";
+import express from "express";
 import http from "http";
 import cors from "cors";
-import socketIo from "socket.io"
+import dotenv from "dotenv";
+import { socketController } from "./sockets";
+import Routes from "./routes/index";
 
-const server = http.createServer(app)
-const PORT = process.env.PORT || 8000
+// Load environment variables
+dotenv.config();
 
-socketController(server)
+// Initialize Express app
+const app = express();
 
-app.get("/",(req,res)=>{
-    res.send("Hello")
-})
+// Middleware
+app.use(cors({
+    origin: "*", // Allow all origins (modify this for production)
+    methods: ["GET", "PATCH", "DELETE", "PUT", "POST"],
+    credentials: true,
+}));
+app.use(express.json()); // Body parser for JSON
+app.use(express.urlencoded({ extended: true })); // URL-encoded bodies
 
-server.listen(PORT, () => {
-    console.log(`Server is running on PORT ${PORT}`);
+// Create an HTTP server
+const server = http.createServer(app);
+
+// Define port
+const PORT = process.env.PORT || 8000;
+
+// Initialize Socket.IO with the server
+socketController(server); // Attach the socket controller
+
+// Basic Route
+app.get("/", (req, res) => {
+    res.send("Hello, server is running!");
 });
 
+// Attach API routes
+app.use("/api", Routes);
 
-// app.listen(PORT, ()=>{
-//     console.log(`Server is running on  PORT ${PORT}`);
-// });
+// Start the server
+server.listen(PORT, () => {
+    console.log(`🚀 Server is running on PORT ${PORT}`);
+});

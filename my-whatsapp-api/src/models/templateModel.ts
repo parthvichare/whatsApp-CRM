@@ -4,13 +4,14 @@ import { queryTable, selectFromTable } from '../helper/knexConfig'; // Adjust pa
 const TABLE_NAME = "templates"
 
 export class Templates{
-    static async create(data: {templateName:string,templateBody:Text, parameterName: string[], templateId:string}) {
+    static async create(data: {templateName:string,templateBody:Text, parameterName: string[], templateId:string, templateCategory:string}) {
         const formattedData ={
             ...data,
             parameterName : JSON.stringify(data.parameterName)   //store as JSON
         }
         return queryTable(TABLE_NAME, formattedData)
     }
+
 
     static async findOne(templateId:string) {
         try{
@@ -22,6 +23,19 @@ export class Templates{
             return null
         }catch(error){
             console.error("Error fetching Template By Id:", error)
+            throw error;
+        }
+    }
+
+    static async getStoredTemplates(){
+        try{
+            const result = await selectFromTable(TABLE_NAME,"*")
+            if (Array.isArray(result) && result.length > 0) {
+                return result; // Return all fetched templates
+            }
+            return [];
+        }catch(error){
+            console.error("Error fetching all templates:", error);
             throw error;
         }
     }

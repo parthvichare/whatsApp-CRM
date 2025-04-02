@@ -113,7 +113,8 @@ export const handleTextMessageFlow = async (leadPhoneNumber: any, salesAgentId: 
             messageType: "text",
             messageContent: messagedetails.messageContent,
             status: "sent",
-            messageId: messagedetails.messageId
+            messageId: messagedetails.messageId,
+            salesAgentId:salesAgentId
         })
         console.log("MessageData", messageData)
 
@@ -154,7 +155,8 @@ export const handleTemplateMessageFlow = async(
             messageType: "template",
             messageContent : messageDetails.templateBody,
             status: "sent",
-            templateName: messageDetails.templateName
+            templateName: messageDetails.templateName,
+            salesAgentId:salesAgentId
         })
         console.log("Message Data stored successfully",messageData)
     
@@ -179,6 +181,7 @@ export const extractTemplateDetails = async(templatesData:any) => {
                 templateId : template.id,
                 templateName: template.name,
                 templateBody: JSON.stringify(template.components.find((comp:any)=> comp.type ==="BODY")?.text || ""),
+                templateCategory: template.category
             }
     
             let allTexts: string[] = []
@@ -209,6 +212,7 @@ export const extractTemplateDetails = async(templatesData:any) => {
 
 //Helping to create API request body ready
 export const designTemplateBody = async(templateBody:any) => {
+    console.log("TemplateBody", templateBody)
     try{
       console.log("Template Body",templateBody)
       const templateDetails = await Templates.findByTemplateName(templateBody.templateName)
@@ -240,21 +244,39 @@ export const designTemplateBody = async(templateBody:any) => {
             text: templateBody.parameterValues[4],
         },
       ];
-      const payload= {
+      const phoneNumbers = Object.values(templateBody.leadPhoneNumber);
+      console.log("Phone",phoneNumbers)
+
+      const payload = phoneNumbers.map((phoneNumber) => ({
         messaging_product: "whatsapp",
-        to:templateBody.leadPhoneNumber,
+        to: phoneNumber,
         type: "template",
-        template:{
-            name:templateBody.templateName,
-            language: {code:"en"},
-            components:[
-                {
-                  type: "body",
-                  parameters: dataParams
-                }
-            ]
-        }
-      }
+        template: {
+          name: templateBody.templateName,
+          language: { code: "en" },
+          components: [
+            {
+              type: "body",
+              parameters: dataParams,
+            },
+          ],
+        },
+       }));
+    //   const payload= {
+    //     messaging_product: "whatsapp",
+    //     to:  templateBody.leadPhoneNumber.lead1,
+    //     type: "template",
+    //     template:{
+    //         name:templateBody.templateName,
+    //         language: {code:"en"},
+    //         components:[
+    //             {
+    //               type: "body",
+    //               parameters: dataParams
+    //             }
+    //         ]
+    //     }
+    //   }
       console.log("PayLoad", payload)
       return {payload,templateDetails}
     }catch(error:any){
