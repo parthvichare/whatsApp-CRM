@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"  # Map host port 5433 to container port 5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ../my-whatsapp-api
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: postgres 
+      DB_PORT: 5432    
+    ports:
+      - "8000:8000"  
+    command: ["npx", "nodemon", "--watch", "src", "--exec", "ts-node", "src/server.ts"]
+    depends_on:
+      - postgres
+
+
+volumes:
+  pgdata:

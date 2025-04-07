@@ -1,0 +1,3 @@
+.dockerignorenode_modules
+logs
+npm-debug.log
