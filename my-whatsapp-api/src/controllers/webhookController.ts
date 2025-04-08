@@ -152,10 +152,6 @@ export class WebhookController {
             templateName: messageTemplate, // Ensure you set the template name correctly
             salesAgentId: conversation.assignedTo
         });
-
-        // const incomingMessage = { success: true, message: "Message Sent Successfully", data: messageData }
-        // console.log(incomingMessage)
-        // WebhookController.io.emit("IncomingMessage", (incomingMessage))
         console.log("✅ Button Response Stored Successfully:", messageData);
     }
 }

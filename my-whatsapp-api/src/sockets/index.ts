@@ -1,7 +1,5 @@
 import { Server, Socket } from "socket.io";
-import { SalesAgent } from "../models/salesAgent";
-import whatsAppService from "../controllers/services/whatsAppService";
-// import {registerMessgeHandler} from "./events/messageHandler";
+import whatsAppService from "../controllers/services/whatsApp.controller";
 import { WebhookController } from "../controllers/webhookController";
 
 let io: Server | null = null; // Declare io as null initially
@@ -10,13 +8,7 @@ export const socketController = (server: any) => {
     if(!io){
         io = new Server(server, { cors: { origin: "*" } }); // Initialize the io instance
         io.on("connection", (socket: Socket) => {
-            // console.log(`✅ New client connected: ${socket.id}`);
             WebhookController.setIoInstance(io)
-
-    //   socket.on("connect",()=>{
-    //     console.log("Socket Connected",socket.id);
-    //     dispatch(setSocket(socket))
-    //   })
 
             socket.emit("socketConnected", socket.id);
 
@@ -37,7 +29,6 @@ export const socketController = (server: any) => {
 export const getIoInstance = (): Server | null => {
     return io;  // Prevents crashes
 };
-
 
 
 export const registerMessgeHandler =(socket:Socket)=>{

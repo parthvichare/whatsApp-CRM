@@ -1,4 +1,4 @@
-import whatsAppService from "../../controllers/services/whatsAppService";
+import whatsAppService from "../../controllers/services/whatsApp.controller";
 import { getIoInstance } from "../index"
 import { Server, Socket } from "socket.io";
 

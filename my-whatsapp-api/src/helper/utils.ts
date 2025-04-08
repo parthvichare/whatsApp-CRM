@@ -6,20 +6,13 @@ import { Leads }         from "../models/leadModel";
 import { Conversations } from "../models/conversationModel";
 import { Messages }      from "../models/messageModel";
 import { Templates } from "../models/templateModel";
-import whatsAppService from "../controllers/services/whatsAppService";
-
-// import whatsAppMessagingService from "../controllers/services/whatsAppMessagingService";
 
 dotenv.config({ path: "../../.env" });
-
-// console.log(process.env.ACESS_TOKEN)
 
 interface createLeadConversations{
     salesAgentId:string,
     leadDetails:any
 }
-
-
 
 interface templateDetails{
     templateId:string,
@@ -54,7 +47,7 @@ export const verifyWebhook = async (req: Request, res: Response) => {
 };
 
 // Create Lead or Conversation if not available
-export const getOrCreateLeadAndConversation = async (leadPhoneNumber: any, salesAgentId: string, ) => {
+export const getOrCreateLeadAndConversation = async (leadPhoneNumber: string, salesAgentId: string, ) => {
   try {
     // Find or Create Lead
     console.log("leadDetails",leadPhoneNumber,salesAgentId)
@@ -94,7 +87,7 @@ export const getOrCreateLeadAndConversation = async (leadPhoneNumber: any, sales
 
 
 // //Text Message Handling
-export const handleTextMessageFlow = async (leadPhoneNumber: any, salesAgentId: any, messagedetails:any) => {
+export const handleTextMessageFlow = async (leadPhoneNumber: string, salesAgentId:string, messagedetails:any) => {
     // const result = await getOrCreateLeadAndConversation(leadPhoneNumber,salesAgentId,messageContent);
     console.log("MesageDetails Utils",messagedetails)
     try{
@@ -131,8 +124,8 @@ export const handleTextMessageFlow = async (leadPhoneNumber: any, salesAgentId: 
 
 //Template Message Handling
 export const handleTemplateMessageFlow = async(
-    leadPhoneNumber: number,
-    salesAgentId: any, 
+    leadPhoneNumber: string,
+    salesAgentId: string, 
     messageDetails:{
         parameterValues:[],
         messageId:string, 
@@ -262,22 +255,6 @@ export const designTemplateBody = async(templateBody:any) => {
           ],
         },
        }));
-    //   const payload= {
-    //     messaging_product: "whatsapp",
-    //     to:  templateBody.leadPhoneNumber.lead1,
-    //     type: "template",
-    //     template:{
-    //         name:templateBody.templateName,
-    //         language: {code:"en"},
-    //         components:[
-    //             {
-    //               type: "body",
-    //               parameters: dataParams
-    //             }
-    //         ]
-    //     }
-    //   }
-      console.log("PayLoad", payload)
       return {payload,templateDetails}
     }catch(error:any){
         console.error(error.message)

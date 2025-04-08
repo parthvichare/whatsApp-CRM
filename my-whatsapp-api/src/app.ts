@@ -1,10 +1,8 @@
 import express, { Request, Response } from 'express';
 import bodyParser from "body-parser";
 import 'dotenv/config';
-import Routes from "./routes/index";
+import Routes from "./routes/api.route";
 import { notFoundResponse } from "./helper/apiResponse";
-import cors from "cors";
-
 
 const app = express();
 

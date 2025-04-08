@@ -27,14 +27,3 @@ export async function down(knex: Knex): Promise<void> {
 }
 
 
-
-// static async createTextMessage(data: {
-//     conversationId:string,
-//     messageId:any,
-//     messageFrom:string,
-//     messageTo:number,
-//     direction:'incoming' | 'outgoing',
-//     messageType: 'text'|'template',
-//     messageContent:string,
-//     status: 'sent'|'delivered' | 'read' | "received"
-// }){
